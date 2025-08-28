@@ -1,0 +1,44 @@
+name: BE CI & Auto Merge
+
+on:
+  push:
+    branches: [BE]
+  pull_request:
+    branches: [BE]
+
+jobs:
+  build:
+    name: 🚀 Build App
+    runs-on: windows-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+      security-events: write
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Build Console App vào thư mục BuildOutput
+        run: dotnet publish ./Server/Server.csproj -c Release -o ./BuildOutput --self-contained false -r win-x64
+
+      # Merge vào main nếu test pass
+      - name: Auto merge BE into main
+        if: success()
+        env:
+          MY_PAT: ${{ secrets.PAT_TOKEN  }}
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          git fetch origin main || git checkout -b main
+          git checkout main
+          git pull origin main || echo "No remote main yet"
+
+          git merge origin/be --no-ff --allow-unrelated-histories -m "Auto merge BE into main after successful build"
+
+          # Push bằng PAT
+          git push https://$MY_PAT@github.com/thuangf45/CPSSFA.git main
+
+
