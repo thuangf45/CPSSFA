@@ -1,11 +1,14 @@
 ﻿using LuciferCore.Core;
-//using LuciferCore.Event;
+using LuciferCore.Event;
 using LuciferCore.Extra;
+using LuciferCore.Handler;
+using LuciferCore.Helper;
 using LuciferCore.Manager;
 using LuciferCore.Model;
 using LuciferCore.NetCoreServer;
 using System.Net.Sockets;
 using static LuciferCore.Core.Simulation;
+using static LuciferCore.Manager.SessionManager;
 
 namespace LuciferCore.Controller
 {
@@ -32,21 +35,36 @@ namespace LuciferCore.Controller
         /// <param name="request">Đối tượng HttpRequest nhận từ client.</param>
         protected override void OnReceivedRequest(HttpRequest request)
         {
-            Simulation.GetModel<ModelServer>().UpdateNumberRequest();
+            var sm = GetModel<SessionManager>();
+            var log = GetModel<LogManager>();
+            var modelServer = GetModel<ModelServer>();
 
-            if (Simulation.GetModel<SessionManager>().Authorization(request, out string userId, this))
+
+            modelServer.UpdateNumberRequest();
+
+
+            if (sm.Authorization(request, out string userId, out UserRole role, this))
             {
-                Simulation.GetModel<LogManager>().Log($"[UserID: {userId} ] Request {request.Method} {request.Url}");
+                log.Log($"[UserID: {userId}] ({role}) Request {request.Method} {request.Url}");
             }
             else
             {
-                Simulation.GetModel<LogManager>().Log($"[UserID: {userId} Unknown] Request {request.Method} {request.Url}");
+                // Không có token hợp lệ → guest
+                userId = "guest";
+                role = UserRole.Guest;
+                log.Log($"[Guest] Request {request.Method} {request.Url}");
             }
 
-            // Lập lịch sự kiện xử lý API
-            //var ev = Schedule<APIEvent>(0.25f);
-            //ev.request = new HttpRequestCopy(request);
-            //ev.session = this;
+            // Check role với route
+            if (!APIHandler.CanAccess(request.Url, role))
+            {
+                // Trả lỗi 403
+                SendResponseAsync(ResponseHelper.MakeJsonResponse(Response, new { message = "Forbidden: insufficient role" }, 403));
+                return;
+            }
+
+            //Dùng HttpRequestCopy(request) nếu lỗi
+            APIHandler.Handle(request, this);
         }
 
         /// <summary>
@@ -57,7 +75,7 @@ namespace LuciferCore.Controller
         /// <param name="error">Thông báo lỗi chi tiết.</param>
         protected override void OnReceivedRequestError(HttpRequest request, string error)
         {
-            Simulation.GetModel<LogManager>().Log($"Request error: {error}", LogLevel.ERROR, LogSource.SYSTEM);
+            GetModel<LogManager>().Log($"Request error: {error}", LogLevel.ERROR, LogSource.SYSTEM);
         }
 
         /// <summary>
@@ -67,7 +85,7 @@ namespace LuciferCore.Controller
         /// <param name="error">Loại lỗi socket gặp phải.</param>
         protected override void OnError(SocketError error)
         {
-            Simulation.GetModel<LogManager>().Log($"HTTPS session caught an error: {error}", LogLevel.ERROR, LogSource.SYSTEM);
+            GetModel<LogManager>().Log($"HTTPS session caught an error: {error}", LogLevel.ERROR, LogSource.SYSTEM);
         }
     }
 }

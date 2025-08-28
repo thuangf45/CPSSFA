@@ -20,7 +20,7 @@ namespace LuciferCore.Manager
         /// <summary>
         /// Giới hạn số lượng tác vụ xử lý sự kiện đồng thời, mặc định là 20.
         /// </summary>
-        public readonly SemaphoreSlim Limiter = new SemaphoreSlim(20);
+        public readonly SemaphoreSlim Limiter = new SemaphoreSlim(25);
 
         /// <summary>
         /// Khởi động <see cref="SimulationManager"/> để chạy vòng lặp mô phỏng trong nền.

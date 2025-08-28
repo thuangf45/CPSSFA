@@ -1,56 +1,67 @@
-﻿using LuciferCore.Event;
+﻿using LuciferCore.Core;
+using LuciferCore.Event;
+using LuciferCore.Extra;
 using LuciferCore.Interface;
 using LuciferCore.NetCoreServer;
-using static LuciferCore.Core.Simulation;
+using System.Reflection;
+using static LuciferCore.Manager.SessionManager;
 
 namespace LuciferCore.Handler
 {
-    internal class APIHandler
+    internal static class APIHandler
     {
-        private readonly static List<IHandler> handlers = new()
-        {
-            //GetModel<APICacheHandler>(),
-            //GetModel<APIAuthHandler>(),
-            //GetModel<APIUserHandler>(),
-            //GetModel<APIGameHandler>(),
-            //GetModel<APIReviewHandler>(),
-            //GetModel<APICommentHandler>(),
-            //GetModel<APIReactionHandler>()
-        };
+        private static readonly Dictionary<string, (Type Handler, UserRole MinRole)> routeMap = new();
 
-        // Trả về IApiEvent thay vì Event gốc
-        private readonly static Dictionary<Type, Func<IApiEvent>> handlerEventMap = new()
-        {
-            //{ typeof(APICacheHandler), () => Schedule<CacheEvent>(0.25f) },
-            //{ typeof(APIAuthHandler), () => Schedule<APIAuthEvent>(0.25f) },
-            //{ typeof(APIUserHandler), () => Schedule<APIUserEvent>(0.25f) },
-            //{ typeof(APIGameHandler), () => Schedule<APIGameEvent>(0.25f) },
-            //{ typeof(APIReviewHandler), () => Schedule<APIReviewEvent>(0.25f) },
-            //{ typeof(APICommentHandler), () => Schedule<APICommentEvent>(0.25f) },
-            //{ typeof(APIReactionHandler), () => Schedule<APIReactionEvent>(0.25f) }
-        };
+        // Cache sẵn method Schedule<T>(float)
+        private static readonly MethodInfo scheduleGeneric = typeof(Simulation).GetMethod(
+            nameof(Simulation.Schedule),
+            BindingFlags.Static | BindingFlags.Public,
+            null,
+            new[] { typeof(float) },
+            null
+        ) ?? throw new InvalidOperationException("Không tìm thấy Simulation.Schedule<T>(float)!");
 
-        public static void AddAPI()
+        /// <summary>
+        /// Đăng ký 1 URL mapping tới Handler
+        /// </summary>
+        public static void AddAPI<THandler>(string url, UserRole minRole)
+            where THandler : HandlerBase, new()
         {
-
+            routeMap[url] = (typeof(THandler), minRole);
         }
 
-        public static void Remove()
+        public static bool CanAccess(string url, UserRole role)
         {
-
+            if (routeMap.TryGetValue(url, out var entry))
+            {
+                return role >= entry.MinRole;
+            }
+            return false;
         }
 
+        /// <summary>
+        /// Bỏ đăng ký route
+        /// </summary>
+        public static void RemoveAPI(string url) => routeMap.Remove(url);
+
+        /// <summary>
+        /// Xử lý request: map url → handler → ApiEvent
+        /// </summary>
         public static void Handle(HttpRequest request, HttpsSession session)
         {
-            string key = request.Url;
-            var handler = handlers.FirstOrDefault(h => h.CanHandle(key));
+            if (!routeMap.TryGetValue(request.Url, out var entry))
+                return;
 
-            if (handler != null && handlerEventMap.TryGetValue(handler.GetType(), out var scheduleFunc))
-            {
-                var ev = scheduleFunc();  // Đây là IApiEvent
-                ev.request = request;
-                ev.session = session;
-            }
+            var handlerType = entry.Handler;
+            var eventType = typeof(ApiEvent<>).MakeGenericType(handlerType);
+            var genericMethod = scheduleGeneric.MakeGenericMethod(eventType);
+            var result = genericMethod.Invoke(null, new object[] { 0.25f });
+
+            if (result is not IApiEvent ev)
+                throw new InvalidOperationException($"Không thể tạo ApiEvent cho {handlerType.Name}");
+
+            ev.request = request;
+            ev.session = session;
         }
     }
 }

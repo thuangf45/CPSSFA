@@ -68,6 +68,15 @@ namespace LuciferCore.Manager
         public void Log(Exception ex, LogLevel level = LogLevel.ERROR, LogSource source = LogSource.SYSTEM)
             => Log(ex.ToString(), level, source);
 
+        public void LogSystem(string message, LogLevel level = LogLevel.INFO)
+        {
+            Log(message, level, LogSource.SYSTEM);
+        }
+        public void LogUser(string message, LogLevel level = LogLevel.INFO)
+        {
+            Log(message, level, LogSource.USER);
+        }
+
         /// <summary>
         /// Khởi động hệ thống ghi log nền, tạo thư mục và tệp log theo ngày.
         /// </summary>

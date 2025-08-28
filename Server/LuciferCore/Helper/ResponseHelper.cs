@@ -1,7 +1,8 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using LuciferCore.Core;
+﻿using LuciferCore.Core;
 using LuciferCore.Manager;
 using LuciferCore.NetCoreServer;
+using Microsoft.IdentityModel.Tokens;
+using static LuciferCore.Manager.SessionManager;
 
 namespace LuciferCore.Helper
 {
@@ -70,10 +71,10 @@ namespace LuciferCore.Helper
         /// <param name="userId">ID của người dùng liên kết với phiên.</param>
         /// <param name="response">Đối tượng HttpResponse cần được chỉnh sửa.</param>
         /// <returns>Đối tượng HttpResponse đã được chỉnh sửa chứa mã thông báo phiên và phản hồi thành công.</returns>
-        public static HttpResponse NewUserSession(string userId, HttpResponse response)
+        public static HttpResponse NewUserSession(string userId, UserRole role, HttpResponse response)
         {
             string newSessionId = Guid.NewGuid().ToString(); // sessionId mới
-            Simulation.GetModel<SessionManager>().Store(newSessionId, userId); // lưu phiên
+            Simulation.GetModel<SessionManager>().Store(newSessionId, userId, role); // lưu phiên
 
             var token = TokenHelper.CreateToken(newSessionId, 60); // tạo token
             response = response.MakeJsonResponse(200, token);

@@ -37,12 +37,22 @@ namespace LuciferCore.Manager
         /// <summary>
         /// Lớp nội bộ lưu trữ thông tin phiên người dùng.
         /// </summary>
+        
+        public enum UserRole
+        {
+            Guest = 0,
+            User = 1,
+            Admin = 2
+        }
+
         private class SessionEntry
         {
             /// <summary>
             /// ID của người dùng liên kết với phiên.
             /// </summary>
             public string UserId;
+
+            public UserRole Role;
 
             /// <summary>
             /// Thời điểm phiên hết hạn.
@@ -61,7 +71,7 @@ namespace LuciferCore.Manager
         /// <param name="sessionId">ID của phiên.</param>
         /// <param name="userId">ID của người dùng liên kết với phiên.</param>
         /// <param name="ttl">Thời gian sống của phiên (mặc định là 1 giờ).</param>
-        public void Store(string sessionId, string userId, TimeSpan? ttl = null)
+        public void Store(string sessionId, string userId, UserRole role, TimeSpan? ttl = null)
         {
             ttl ??= TimeSpan.FromHours(1);
             using (new WriteLock(_lock))
@@ -69,7 +79,8 @@ namespace LuciferCore.Manager
                 _sessions[sessionId] = new SessionEntry
                 {
                     UserId = userId,
-                    ExpireAt = DateTime.UtcNow + ttl.Value,
+                    Role = role,
+                    ExpireAt = DateTime.UtcNow + ttl.Value
                 };
             }
         }
@@ -119,29 +130,35 @@ namespace LuciferCore.Manager
         }
 
         /// <summary>
-        /// Xác thực yêu cầu HTTP dựa trên mã thông báo và lấy ID người dùng.
+        /// Xác thực yêu cầu HTTP dựa trên mã thông báo và lấy userId + role.
         /// </summary>
         /// <param name="request">Yêu cầu HTTP chứa mã thông báo.</param>
         /// <param name="userId">ID người dùng được trích xuất (nếu xác thực thành công).</param>
         /// <param name="session">Phiên HTTPS để xóa mã thông báo nếu xác thực thất bại (tùy chọn).</param>
         /// <returns>Trả về <c>true</c> nếu xác thực thành công, ngược lại trả về <c>false</c>.</returns>
-        public bool Authorization(HttpRequest request, out string userId, HttpsSession session = null)
+        public bool Authorization(HttpRequest request, out string userId, out UserRole role, HttpsSession session = null)
         {
-            userId = "";
+            userId = "guest";
+            role = UserRole.Guest;
+
             string token = TokenHelper.GetToken(request);
             if (TokenHelper.TryParseToken(token, out var sessionId))
             {
-                string? id = GetUserId(sessionId);
-                if (id != null)
+                using (new ReadLock(_lock))
                 {
-                    userId = id;
-                    return true;
+                    if (_sessions.TryGetValue(sessionId, out var entry) && !entry.IsExpired)
+                    {
+                        userId = entry.UserId;
+                        role = entry.Role;
+                        return true;
+                    }
                 }
-                else if (session != null)
-                {
+
+                RemoveSession(sessionId); // hết hạn
+                if (session != null)
                     TokenHelper.RemoveToken(session.Response);
-                }
             }
+
             return false;
         }
 

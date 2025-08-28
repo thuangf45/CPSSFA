@@ -1,45 +1,51 @@
 ﻿using LuciferCore.Core;
-using LuciferCore.Handler;
 using LuciferCore.Helper;
+using LuciferCore.Interface;
 using LuciferCore.Manager;
 using LuciferCore.NetCoreServer;
+using LuciferCore.Extra;
 
 namespace LuciferCore.Event
 {
-    internal class APIEvent : Simulation.Event<APIEvent>
+    /// <summary>
+    /// Event API tổng quát, map trực tiếp 1 handler cụ thể để xử lý request.
+    /// </summary>
+    /// <typeparam name="THandler">Handler tương ứng</typeparam>
+    public class ApiEvent<THandler>
+        : Simulation.Event<ApiEvent<THandler>>, IApiEvent
+        where THandler : HandlerBase, new()
     {
-        public HttpRequest? request;
-        public HttpsSession? session;
+        public HttpRequest request { get; set; }
+        public HttpsSession session { get; set; }
+
         public override void Execute()
         {
             if (request != null && session != null)
             {
-                if (request != null && session != null)
+                Task.Run(async () =>
                 {
-                    // Chạy luồng bất đồng bộ
-                    Task.Run(async () =>
+                    await Simulation.GetModel<SimulationManager>().Limiter.WaitAsync();
+                    try
                     {
-                        // Đảm bảo đồng độ ko quá nhiều luồng
-                        await Simulation.GetModel<SimulationManager>().Limiter.WaitAsync();
-                        try
-                        {
-                            APIHandler.Handle(request, session);
-                        }
-                        catch (Exception ex)
-                        {
-                            session.SendResponseAsync(ResponseHelper.MakeJsonResponse(session.Response, 500));
-                            Simulation.GetModel<LogManager>().Log("Lỗi trong API: " + ex.ToString(), LogLevel.ERROR, LogSource.SYSTEM);
-                        }
-                        finally
-                        {
-                            // Giải phóng luồng đã hoàn thành
-                            Simulation.GetModel<SimulationManager>().Limiter.Release();
-                        }
-                    });
-
-                }
+                        Simulation.GetModel<THandler>().Handle(request, session);
+                    }
+                    catch (Exception ex)
+                    {
+                        session.SendResponseAsync(
+                            ResponseHelper.MakeJsonResponse(session.Response, 500)
+                        );
+                        Simulation.GetModel<LogManager>().Log(
+                            $"Lỗi trong API {typeof(THandler).Name}: {ex}",
+                            LogLevel.ERROR,
+                            LogSource.SYSTEM
+                        );
+                    }
+                    finally
+                    {
+                        Simulation.GetModel<SimulationManager>().Limiter.Release();
+                    }
+                });
             }
-            
         }
     }
 }
