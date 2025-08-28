@@ -1,11 +1,11 @@
 ﻿using LuciferCore.Core;
-using LuciferCore.Extra;
 using LuciferCore.Interface;
 using LuciferCore.Manager;
+using Server.LuciferCore.Model;
 using System.Data;
 using System.Reflection;
 
-namespace LuciferCore.Database
+namespace Server.LuciferCore.Databasse
 {
     /// <summary>
     /// Lớp cơ sở trừu tượng cho các database cụ thể, cung cấp các thao tác chung như Get, Delete, và thực thi truy vấn SQL.

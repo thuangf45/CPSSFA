@@ -1,7 +1,7 @@
 ﻿using LuciferCore.NetCoreServer;
 using System.Text;
 
-namespace LuciferCore.Extra
+namespace Server.LuciferCore.Request
 {
     /// <summary>
     /// Lớp mở rộng từ <see cref="HttpRequest"/> cho phép tạo bản sao bất biến (immutable copy) từ một đối tượng HttpRequest gốc.

@@ -1,4 +1,4 @@
-﻿using LuciferCore.Extra;
+﻿using Server.LuciferCore.Model;
 
 public static class ImageFileHelper
 {

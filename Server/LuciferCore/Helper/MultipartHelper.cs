@@ -1,7 +1,7 @@
 ﻿using LuciferCore.Core;
-using LuciferCore.Extra;
 using LuciferCore.Manager;
 using LuciferCore.NetCoreServer;
+using Server.LuciferCore.Model;
 using System.Text;
 
 public static class MultipartHelper

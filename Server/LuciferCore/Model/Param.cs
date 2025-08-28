@@ -1,4 +1,4 @@
-﻿namespace LuciferCore.Extra
+﻿namespace Server.LuciferCore.Model
 {
     /// <summary>
     /// Lớp cơ sở cho các yêu cầu xóa, chứa UserId của người gửi yêu cầu.

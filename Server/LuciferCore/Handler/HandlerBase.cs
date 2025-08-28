@@ -2,7 +2,7 @@
 using LuciferCore.Interface;
 using LuciferCore.NetCoreServer;
 
-namespace LuciferCore.Extra
+namespace Server.LuciferCore.Handler
 {
     /// <summary>
     /// Cung cấp lớp cơ sở cho các handler xử lý HTTP request theo phương thức (GET, POST, PUT, DELETE).
@@ -168,8 +168,8 @@ namespace LuciferCore.Extra
         protected virtual void SendJsonResponse(HttpsSession session, object data, int statusCode)
         {
             var response = data != null
-                ? ResponseHelper.MakeJsonResponse(session.Response, data, statusCode)
-                : ResponseHelper.MakeJsonResponse(session.Response, statusCode);
+                ? session.Response.MakeJsonResponse(data, statusCode)
+                : session.Response.MakeJsonResponse(statusCode);
             session.SendResponseAsync(response);
         }
 

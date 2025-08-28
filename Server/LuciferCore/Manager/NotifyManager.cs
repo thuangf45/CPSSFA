@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Mail;
-using LuciferCore.Extra;
+using Server.LuciferCore.Model;
 
 namespace LuciferCore.Manager
 {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
 
-namespace LuciferCore.Extra
+namespace Server.LuciferCore.Cache
 {
     class CommonCache
     {

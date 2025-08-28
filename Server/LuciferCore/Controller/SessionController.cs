@@ -1,7 +1,4 @@
-﻿using LuciferCore.Core;
-using LuciferCore.Event;
-using LuciferCore.Extra;
-using LuciferCore.Handler;
+﻿using LuciferCore.Handler;
 using LuciferCore.Helper;
 using LuciferCore.Manager;
 using LuciferCore.Model;
