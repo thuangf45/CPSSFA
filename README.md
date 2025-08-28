@@ -1,1 +1,1 @@
-# core-performance-security-safe-fast-ai (CPSSFA)
+# CPSSFA: Core Performance Security Safe Fast AI
