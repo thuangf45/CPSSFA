@@ -1,4 +1,4 @@
-name: Full CI with Lint, Security, Build & Notify
+name: Full CI Build & Notify
 
 on:
   push:
