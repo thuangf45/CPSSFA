@@ -1,0 +1,35 @@
+name: BE CI & Auto Merge & Notify
+
+on:
+  push:
+    branches: [BE]
+  pull_request:
+    branches: [BE]
+
+jobs:
+  build:
+    name: 🚀 Build App
+    runs-on: windows-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Build Console App vào thư mục BuildOutput
+        run: dotnet publish ./Server/Server.csproj -c Release -o ./BuildOutput --self-contained false -r win-x64
+
+      # Merge vào main nếu test pass
+      - name: Auto merge BE into main
+        if: success()
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git checkout main
+          git pull origin main
+          git merge origin/be --no-ff -m "Auto merge BE into main after successful build"
+          git push origin main
