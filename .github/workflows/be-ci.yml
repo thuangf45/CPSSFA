@@ -32,11 +32,12 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          git fetch origin main || git checkout -b main
+          # Checkout main
+          git fetch origin main
           git checkout main
-          git pull origin main || echo "No remote main yet"
 
-          git merge origin/be --no-ff --allow-unrelated-histories -m "Auto merge BE into main after successful build"
+          # Merge branch BE vào main
+          git merge origin/BE --no-ff --allow-unrelated-histories -m "Auto merge BE into main after successful build"
 
           # Push bằng token
           git push https://x-access-token:${GITHUB_TOKEN}@github.com/thuangf45/CPSSFA.git main
