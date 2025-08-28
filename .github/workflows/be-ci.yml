@@ -1,4 +1,4 @@
-name: BE CI & Auto Merge & Notify
+name: BE CI & Auto Merge
 
 on:
   push:
