@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Server.Source.Core
+namespace LuciferCore.Core
 {
     /// <summary>
     /// Cung cấp thời gian chạy (elapsed time) kể từ khi hệ thống khởi động,
