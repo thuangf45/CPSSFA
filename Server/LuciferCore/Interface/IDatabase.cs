@@ -12,7 +12,7 @@
         /// <returns>Đối tượng <see cref="IDatabase"/> đại diện cho instance.</returns>
         public IDatabase<T> GetInstance();
 
-        public int Create<T>(T data);
+        public int Create(T data);
 
         /// <summary>
         /// Lấy dữ liệu từ cơ sở dữ liệu theo ID.

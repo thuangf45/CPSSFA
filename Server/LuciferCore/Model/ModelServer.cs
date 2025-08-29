@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using LuciferCore.Databasse;
 
 namespace LuciferCore.Model
 {
@@ -251,13 +252,10 @@ namespace LuciferCore.Model
             Simulation.SetModel<LogManager>(new LogManager());
             Simulation.SetModel<SimulationManager>(new SimulationManager());
             Simulation.SetModel<SessionManager>(new SessionManager());
-            Simulation.SetModel<DatabaseManager>(new DatabaseManager());
             Simulation.SetModel<NotifyManager>(new NotifyManager());
 
             // MVP
             Simulation.SetModel<ServerPresenter>(new ServerPresenter());
-
-            Task.Run(() => Simulation.GetModel<DatabaseManager>().Init());
         }
 
         /// <summary>

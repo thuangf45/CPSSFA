@@ -7,7 +7,7 @@ namespace LuciferCore.Manager
     /// <summary>
     /// Quản lý các phiên người dùng (session) với cơ chế lưu trữ an toàn đa luồng và tự động dọn dẹp các phiên hết hạn.
     /// </summary>
-    public class SessionManager
+    public class SessionManager : ManagerBase
     {
         /// <summary>
         /// Khóa đọc-ghi an toàn đa luồng để bảo vệ truy cập vào danh sách phiên.
@@ -23,16 +23,6 @@ namespace LuciferCore.Manager
         /// Số lượng phiên hiện tại trong hệ thống.
         /// </summary>
         public int NumberSession => _sessions.Count;
-
-        /// <summary>
-        /// Bộ điều khiển tín hiệu hủy để dừng tác vụ nền một cách an toàn.
-        /// </summary>
-        private CancellationTokenSource _cts = new();
-
-        /// <summary>
-        /// Tác vụ nền để dọn dẹp các phiên hết hạn.
-        /// </summary>
-        private Task? _cleanerTask;
 
         /// <summary>
         /// Lớp nội bộ lưu trữ thông tin phiên người dùng.
@@ -272,53 +262,17 @@ namespace LuciferCore.Manager
         }
 
         /// <summary>
-        /// Khởi động tác vụ nền để dọn dẹp các phiên hết hạn định kỳ.
-        /// </summary>
-        /// <remarks>
-        /// Nếu tác vụ đã chạy, phương thức sẽ bỏ qua. Tác vụ dọn dẹp chạy mỗi 600 giây (10 phút).
-        /// </remarks>
-        public void Start()
-        {
-            if (_cleanerTask != null && !_cleanerTask.IsCompleted)
-                return;
-
-            if (_cts.IsCancellationRequested)
-                _cts = new CancellationTokenSource();
-
-            _cleanerTask = Task.Run(() => Run(_cts.Token));
-        }
-
-        /// <summary>
-        /// Dừng tác vụ nền dọn dẹp các phiên và ghi log thông báo.
-        /// </summary>
-        public void Stop()
-        {
-            _cts.Cancel();
-
-            try
-            {
-                _cleanerTask?.Wait();
-            }
-            catch (AggregateException ae)
-            {
-                ae.Handle(e => e is OperationCanceledException);
-            }
-            Simulation.GetModel<LogManager>().Log("SessionManager stopped.", LogLevel.INFO, LogSource.SYSTEM);
-        }
-
-        /// <summary>
         /// Vòng lặp nền để dọn dẹp các phiên hết hạn định kỳ.
         /// </summary>
         /// <param name="token">Mã hủy để dừng tác vụ một cách an toàn.</param>
         /// <returns>Tác vụ bất đồng bộ xử lý dọn dẹp.</returns>
-        private async Task Run(CancellationToken token)
+        protected override async Task Run(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
                 try
                 {
                     CleanExpiredSessions();
-                    await Task.Delay(600_000, token); // Dọn mỗi 600 giây
                 }
                 catch (OperationCanceledException)
                 {
@@ -329,7 +283,18 @@ namespace LuciferCore.Manager
                     Simulation.GetModel<LogManager>()?.Log(ex); // Ghi log lỗi nếu cần
                     await Task.Delay(1000, token);
                 }
+                await Task.Delay(600_000, token); // Dọn mỗi 600 giây
             }
+        }
+
+        protected override void OnStarted()
+        {
+            Simulation.GetModel<LogManager>().Log("SessionManager started.", LogLevel.INFO, LogSource.SYSTEM);
+        }
+
+        protected override void OnStopped()
+        {
+            Simulation.GetModel<LogManager>().Log("SessionManager stopped.", LogLevel.INFO, LogSource.SYSTEM);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using LuciferCore.Core;
 using LuciferCore.Manager;
 using LuciferCore.Model;
+using LuciferCore.Databasse;
 using static LuciferCore.Model.ModelServer;
 
 namespace LuciferCore.Presenter
@@ -34,8 +35,6 @@ namespace LuciferCore.Presenter
             // Lắng nghe LogManager
             Simulation.GetModel<LogManager>().OnLogPrinted += Log;
 
-            // Lắng nghe DatabaseManager
-            Simulation.GetModel<DatabaseManager>().FailedConnectDB += ErrorStop;
         }
 
         /// <summary>

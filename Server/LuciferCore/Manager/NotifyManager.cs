@@ -1,7 +1,8 @@
-﻿using System.Collections.Concurrent;
+﻿using LuciferCore.Core;
+using Server.LuciferCore.Model;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Mail;
-using Server.LuciferCore.Model;
 
 namespace LuciferCore.Manager
 {
@@ -9,22 +10,12 @@ namespace LuciferCore.Manager
     /// Quản lý hệ thống gửi email nền bằng SMTP, sử dụng hàng đợi và đa luồng an toàn.
     /// Cho phép cấu hình linh hoạt người gửi (smtpUser) cho từng email.
     /// </summary>
-    public class NotifyManager
+    public class NotifyManager : ManagerBase
     {
         /// <summary>
         /// Hàng đợi các yêu cầu gửi email đang chờ xử lý.
         /// </summary>
         private readonly BlockingCollection<EmailSendRequest> _queue = new();
-
-        /// <summary>
-        /// Token hủy để điều khiển vòng đời của tác vụ gửi email.
-        /// </summary>
-        private CancellationTokenSource _cts = new();
-
-        /// <summary>
-        /// Tác vụ chạy nền để xử lý hàng đợi gửi email.
-        /// </summary>
-        private Task? _task;
 
         /// <summary>
         /// Máy chủ SMTP (ví dụ: smtp.gmail.com cho gmail).
@@ -78,37 +69,6 @@ namespace LuciferCore.Manager
             _smtpPass = "aysd pgdv lfib ldll";
             _useSsl = true;
         }
-
-        /// <summary>
-        /// Bắt đầu hệ thống gửi email nền.
-        /// Nếu đang chạy thì sẽ không làm gì.
-        /// </summary>
-        public void Start()
-        {
-            if (_task != null && !_task.IsCompleted) return;
-            if (_cts.IsCancellationRequested) _cts = new CancellationTokenSource();
-            _task = Task.Run(() => Run(_cts.Token));
-        }
-
-        /// <summary>
-        /// Dừng hệ thống gửi email nền.
-        /// Đóng hàng đợi và đợi tác vụ hoàn tất.
-        /// </summary>
-        public void Stop()
-        {
-            _cts.Cancel();
-            _queue.CompleteAdding();
-
-            try
-            {
-                _task?.Wait();
-            }
-            catch (AggregateException ae)
-            {
-                ae.Handle(e => e is OperationCanceledException);
-            }
-        }
-
         private string QuickFormatResetPassword(string password)
         {
             // Mã hóa HTML để tránh special chars phá cấu trúc HTML
@@ -166,7 +126,7 @@ namespace LuciferCore.Manager
         /// Lấy email từ hàng đợi, gửi qua SMTP và phát sự kiện tương ứng.
         /// </summary>
         /// <param name="token">Token để hủy tác vụ một cách an toàn.</param>
-        private async Task Run(CancellationToken token)
+        protected override async Task Run(CancellationToken token)
         {
             foreach (var req in _queue.GetConsumingEnumerable(token))
             {
@@ -203,8 +163,23 @@ namespace LuciferCore.Manager
                     OnEmailFailed?.Invoke(req, ex);
                 }
 
-                await Task.Delay(300, token); // Tránh spam server
+                await Task.Delay(10_000, token); // Tránh spam server
             }
+        }
+
+        protected override void OnStarted()
+        {
+            Simulation.GetModel<LogManager>().Log("NotifyManager started.", LogLevel.INFO, LogSource.SYSTEM);
+        }
+
+        protected override void OnStopping()
+        {
+            _queue.CompleteAdding();
+        }
+
+        protected override void OnStopped()
+        {
+            Simulation.GetModel<LogManager>().Log("NotifyManager stopped.", LogLevel.INFO, LogSource.SYSTEM);
         }
     }
 }

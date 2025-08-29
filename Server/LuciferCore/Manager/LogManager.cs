@@ -6,22 +6,12 @@ namespace LuciferCore.Manager
     /// <summary>
     /// Quản lý hệ thống ghi log chạy nền, đảm bảo an toàn đa luồng. Ghi log vào tệp theo ngày và phát sự kiện <see cref="OnLogPrinted"/> để hiển thị log.
     /// </summary>
-    public class LogManager
+    public class LogManager : ManagerBase
     {
         /// <summary>
         /// Hàng đợi log an toàn đa luồng để lưu trữ các mục log chờ xử lý.
         /// </summary>
         private readonly BlockingCollection<(LogSource source, string message)> _logQueue = new();
-
-        /// <summary>
-        /// Bộ điều khiển tín hiệu hủy để dừng tác vụ ghi log một cách an toàn.
-        /// </summary>
-        private CancellationTokenSource _cts = new();
-
-        /// <summary>
-        /// Tác vụ xử lý ghi log chạy nền.
-        /// </summary>
-        private Task? _logTask;
 
         /// <summary>
         /// Sự kiện được kích hoạt khi có log mới, cho phép các lớp khác (như UI) lắng nghe và hiển thị log.
@@ -77,20 +67,8 @@ namespace LuciferCore.Manager
             Log(message, level, LogSource.USER);
         }
 
-        /// <summary>
-        /// Khởi động hệ thống ghi log nền, tạo thư mục và tệp log theo ngày.
-        /// </summary>
-        /// <remarks>
-        /// Nếu hệ thống đã chạy, phương thức sẽ bỏ qua. Tạo các thư mục 'logs/log_user' và 'logs/log_system' nếu chưa tồn tại.
-        /// </remarks>
-        public void Start()
+        public LogManager()
         {
-            if (_logTask != null && !_logTask.IsCompleted)
-                return; // Đã chạy rồi
-
-            if (_cts.IsCancellationRequested)
-                _cts = new CancellationTokenSource(); // Reset token nếu đã hủy trước đó
-
             // Tạo thư mục 'logs' nếu chưa tồn tại
             var logDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
             var log_user = Path.Combine(logDir, "log_user");
@@ -103,40 +81,6 @@ namespace LuciferCore.Manager
             var date = DateTime.Now.ToString("yyyy-MM-dd");
             _logUserFilePath = Path.Combine(log_user, $"log_{date}.txt");
             _logSystemFilePath = Path.Combine(log_system, $"log_{date}.txt");
-
-            // Khởi chạy tác vụ xử lý log nền
-            _logTask = Task.Run(() => Run(_cts.Token));
-        }
-
-        /// <summary>
-        /// Khởi động lại hệ thống ghi log bằng cách dừng và khởi chạy lại.
-        /// </summary>
-        public void Restart()
-        {
-            Stop();
-            Start();
-        }
-
-        /// <summary>
-        /// Dừng hệ thống ghi log, đóng hàng đợi và đợi tác vụ nền hoàn tất.
-        /// </summary>
-        /// <remarks>
-        /// Gửi tín hiệu hủy và ghi log thông báo dừng hệ thống. Đợi tác vụ nền hoàn tất một cách an toàn.
-        /// </remarks>
-        public void Stop()
-        {
-            _cts.Cancel(); // Gửi tín hiệu yêu cầu dừng cho vòng lặp
-            Simulation.GetModel<LogManager>().Log("LogManager stopped.", LogLevel.INFO, LogSource.SYSTEM);
-            _logQueue.CompleteAdding(); // Không cho thêm log mới
-            try
-            {
-                _logTask.Wait(); // Đợi cho tác vụ kết thúc hoàn toàn
-            }
-            catch (AggregateException ae)
-            {
-                // Bỏ qua ngoại lệ hợp lệ (ví dụ do Cancel)
-                ae.Handle(e => e is OperationCanceledException);
-            }
         }
 
         /// <summary>
@@ -144,7 +88,7 @@ namespace LuciferCore.Manager
         /// </summary>
         /// <param name="token">Mã hủy để dừng tác vụ một cách an toàn.</param>
         /// <returns>Tác vụ bất đồng bộ xử lý log.</returns>
-        private async Task Run(CancellationToken token)
+        protected override async Task Run(CancellationToken token)
         {
             var currentDate = DateTime.Now.Date;
             StreamWriter writerU = null;
@@ -196,7 +140,24 @@ namespace LuciferCore.Manager
                     writerU?.Dispose();
                     writerS?.Dispose();
                 }
+
+                await Task.Delay(100, token);
             }
+        }
+
+        protected override void OnStarted()
+        {
+            Simulation.GetModel<LogManager>().Log("SimulationManager started.", LogLevel.INFO, LogSource.SYSTEM);
+        }
+
+        protected override void OnStopping()
+        {
+            _logQueue.CompleteAdding(); // Không cho thêm log mới
+        }
+
+        protected override void OnStopped()
+        {
+            Simulation.GetModel<LogManager>().Log("SimulationManager stopped.", LogLevel.INFO, LogSource.SYSTEM);
         }
     }
 
