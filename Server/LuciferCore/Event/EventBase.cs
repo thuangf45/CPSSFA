@@ -11,8 +11,8 @@ namespace LuciferCore.Event
     /// Event API tổng quát, map trực tiếp 1 handler cụ thể để xử lý request.
     /// </summary>
     /// <typeparam name="THandler">Handler tương ứng</typeparam>
-    public class ApiEvent<THandler>
-        : Simulation.Event<ApiEvent<THandler>>, IApiEvent
+    public class EventBase<THandler>
+        : Simulation.Event<EventBase<THandler>>, IApiEvent
         where THandler : HandlerBase, new()
     {
         public HttpRequest request { get; set; }

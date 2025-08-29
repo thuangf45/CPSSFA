@@ -1,14 +1,13 @@
 ﻿using LuciferCore.Core;
-using LuciferCore.Event;
 using LuciferCore.Interface;
 using LuciferCore.NetCoreServer;
 using Server.LuciferCore.Handler;
 using System.Reflection;
 using static LuciferCore.Manager.SessionManager;
 
-namespace LuciferCore.Handler
+namespace LuciferCore.Event
 {
-    internal static class APIHandler
+    internal static class EventDispatcher
     {
         private static readonly Dictionary<string, (Type Handler, UserRole MinRole)> routeMap = new();
 
@@ -24,9 +23,14 @@ namespace LuciferCore.Handler
         /// <summary>
         /// Đăng ký 1 URL mapping tới Handler
         /// </summary>
-        public static void AddAPI<THandler>(string url, UserRole minRole)
+        public static void AddAPI<THandler>(UserRole minRole, string url = "")
             where THandler : HandlerBase, new()
         {
+            if (url.IsNormalized())
+            {
+                var handler = new THandler();
+                url = handler.Type; // lấy Type từ instance
+            }
             routeMap[url] = (typeof(THandler), minRole);
         }
 
@@ -53,7 +57,7 @@ namespace LuciferCore.Handler
                 return;
 
             var handlerType = entry.Handler;
-            var eventType = typeof(ApiEvent<>).MakeGenericType(handlerType);
+            var eventType = typeof(EventBase<>).MakeGenericType(handlerType);
             var genericMethod = scheduleGeneric.MakeGenericMethod(eventType);
             var result = genericMethod.Invoke(null, new object[] { 0.25f });
 

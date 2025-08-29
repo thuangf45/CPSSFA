@@ -15,7 +15,6 @@ namespace Server.LuciferCore.Handler
         /// </summary>
         public abstract string Type { get; }
 
-
         /// <summary>
         /// Các route xử lý HEAD request.
         /// </summary>

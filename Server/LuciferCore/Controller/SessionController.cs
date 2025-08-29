@@ -1,11 +1,11 @@
-﻿using LuciferCore.Handler;
-using LuciferCore.Helper;
+﻿using LuciferCore.Helper;
 using LuciferCore.Manager;
 using LuciferCore.Model;
 using LuciferCore.NetCoreServer;
-using System.Net.Sockets;
 using static LuciferCore.Core.Simulation;
+using System.Net.Sockets;
 using static LuciferCore.Manager.SessionManager;
+using LuciferCore.Event;
 
 namespace LuciferCore.Controller
 {
@@ -53,7 +53,7 @@ namespace LuciferCore.Controller
             }
 
             // Check role với route
-            if (!APIHandler.CanAccess(request.Url, role))
+            if (!EventDispatcher.CanAccess(request.Url, role))
             {
                 // Trả lỗi 403
                 SendResponseAsync(ResponseHelper.MakeJsonResponse(Response, new { message = "Forbidden: insufficient role" }, 403));
@@ -61,7 +61,7 @@ namespace LuciferCore.Controller
             }
 
             //Dùng HttpRequestCopy(request) nếu lỗi
-            APIHandler.Handle(request, this);
+            EventDispatcher.Handle(request, this);
         }
 
         /// <summary>
