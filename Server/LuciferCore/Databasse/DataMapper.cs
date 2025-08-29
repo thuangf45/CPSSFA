@@ -6,27 +6,46 @@ namespace LuciferCore.Helpers
     public static class DataMapper
     {
         /// <summary>
+        /// Chuẩn hóa key parameter (thêm @ nếu thiếu).
+        /// </summary>
+        private static string NormalizeKey(string key)
+            => key.StartsWith("@") ? key : "@" + key;
+
+        /// <summary>
+        /// Chuẩn hóa giá trị parameter: null => DBNull, DataTable giữ nguyên.
+        /// </summary>
+        private static object NormalizeValue(object? value)
+            => value ?? DBNull.Value;
+
+        /// <summary>
         /// Chuyển đổi một object hoặc dictionary thành parameter dictionary
-        /// dùng cho database command. 
+        /// dùng cho database command.
         /// - Nếu là Dictionary: chuẩn hóa key (thêm @ nếu thiếu).
-        /// - Nếu là object: ánh xạ property public thành key/value.
-        /// Null => DBNull.Value.
+        /// - Nếu là DataTable: coi như table-valued parameter.
+        /// - Nếu là object thường: ánh xạ property public thành key/value.
         /// </summary>
         public static Dictionary<string, object> ToParameterDictionary(object obj)
         {
             if (obj is Dictionary<string, object> dict)
             {
                 return dict.ToDictionary(
-                    kvp => kvp.Key.StartsWith("@") ? kvp.Key : "@" + kvp.Key,
-                    kvp => kvp.Value ?? DBNull.Value
+                    kvp => NormalizeKey(kvp.Key),
+                    kvp => NormalizeValue(kvp.Value)
                 );
+            }
+
+            if (obj is DataTable dt)
+            {
+                return new Dictionary<string, object>
+                {
+                    ["@TableParam"] = dt // key phải trùng tên tham số SP
+                };
             }
 
             var result = new Dictionary<string, object>();
             foreach (var prop in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
-                result[prop.Name.StartsWith("@") ? prop.Name : "@" + prop.Name] =
-                    prop.GetValue(obj) ?? DBNull.Value;
+                result[NormalizeKey(prop.Name)] = NormalizeValue(prop.GetValue(obj));
             }
             return result;
         }
@@ -38,8 +57,8 @@ namespace LuciferCore.Helpers
         public static Dictionary<string, object> ToParameterDictionary(params (string name, object value)[] parameters)
         {
             return parameters.ToDictionary(
-                p => p.name.StartsWith("@") ? p.name : "@" + p.name,
-                p => p.value ?? DBNull.Value
+                p => NormalizeKey(p.name),
+                p => NormalizeValue(p.value)
             );
         }
 
