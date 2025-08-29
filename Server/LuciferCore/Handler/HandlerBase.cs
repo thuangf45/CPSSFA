@@ -1,6 +1,8 @@
-﻿using LuciferCore.Helper;
+﻿using LuciferCore.Attributes;
+using LuciferCore.Helper;
 using LuciferCore.Interface;
 using LuciferCore.NetCoreServer;
+using System.Reflection;
 
 namespace Server.LuciferCore.Handler
 {
@@ -53,13 +55,33 @@ namespace Server.LuciferCore.Handler
 
         protected HandlerBase()
         {
-            HeadRoutes[Type] = HeadHandle;
-            OptionsRoutes[Type] = OptionsHandle;
-            TraceRoutes[Type] = TraceHandle;
-            GetRoutes[Type] = GetHandle;
-            PostRoutes[Type] = PostHandle;
-            PutRoutes[Type] = PutHandle;
-            DeleteRoutes[Type] = DeleteHandle;
+            var methods = GetType().GetMethods(
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            foreach (var method in methods)
+            {
+                var routeAttrs = method.GetCustomAttributes<RouteAttribute>(true);
+                foreach (var attr in routeAttrs)
+                {
+                    // Tạo delegate từ method để gọi được
+                    var action = (Action<HttpRequest, HttpsSession>)
+                        Delegate.CreateDelegate(typeof(Action<HttpRequest, HttpsSession>), this, method);
+
+                    // Ghép Type (prefix) + path (sub route)
+                    var fullPath = (Type + attr.Path).ToLower();
+
+                    switch (attr.Method)
+                    {
+                        case "HEAD": HeadRoutes[fullPath] = action; break;
+                        case "GET": GetRoutes[fullPath] = action; break;
+                        case "POST": PostRoutes[fullPath] = action; break;
+                        case "PUT": PutRoutes[fullPath] = action; break;
+                        case "DELETE": DeleteRoutes[fullPath] = action; break;
+                        case "OPTIONS": OptionsRoutes[fullPath] = action; break;
+                        case "TRACE": TraceRoutes[fullPath] = action; break;
+                    }
+                }
+            }
 
         }
 
