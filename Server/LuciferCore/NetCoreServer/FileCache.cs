@@ -342,7 +342,6 @@ namespace LuciferCore.NetCoreServer
                 foreach (var item in Directory.GetDirectories(path))
                 {
                     string key = prefix + "/" + HttpUtility.UrlDecode(Path.GetFileName(item));
-                    Console.WriteLine($"Add cache: '{key}'");  // log key thật sự ra
                     // Recursively insert sub-directory
                     if (!InsertPathInternal(root, item, key, timeout, handler))
                         return false;
@@ -351,7 +350,6 @@ namespace LuciferCore.NetCoreServer
                 foreach (var item in Directory.GetFiles(path))
                 {
                     string key = prefix + "/" + HttpUtility.UrlDecode(Path.GetFileName(item));
-                    Console.WriteLine($"Add cache: '{key}'");  // log key thật sự ra
                     // Insert file into the cache
                     if (!InsertFileInternal(root, item, key, timeout, handler))
                         return false;

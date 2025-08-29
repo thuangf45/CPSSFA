@@ -1,4 +1,5 @@
 ﻿using LuciferCore.Core;
+using static LuciferCore.Core.Simulation;
 
 namespace LuciferCore.Manager
 {
@@ -36,12 +37,12 @@ namespace LuciferCore.Manager
 
         protected override void OnStarted()
         {
-            Simulation.GetModel<LogManager>().Log("SimulationManager started.", LogLevel.INFO, LogSource.SYSTEM);
+            GetModel<LogManager>().LogSystem("⚙️ SimulationManager started");
         }
 
         protected override void OnStopped()
         {
-            Simulation.GetModel<LogManager>().Log("SimulationManager stopped.", LogLevel.INFO, LogSource.SYSTEM);
+            GetModel<LogManager>().LogSystem("⚙️ SimulationManager stopped");
         }
     }
 }

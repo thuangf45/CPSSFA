@@ -1,26 +1,26 @@
 ﻿using LuciferCore.Helper;
 using LuciferCore.Manager;
-using LuciferCore.Model;
 using LuciferCore.NetCoreServer;
 using static LuciferCore.Core.Simulation;
 using System.Net.Sockets;
 using static LuciferCore.Manager.SessionManager;
 using LuciferCore.Event;
+using LuciferCore.Server;
 
-namespace LuciferCore.Controller
+namespace LuciferCore.Session
 {
     /// <summary>
     /// Phiên làm việc HTTPS xử lý từng yêu cầu từ client.
     /// Bao gồm cập nhật số lượng request, kiểm tra xác thực người dùng,
     /// ghi log và lập lịch sự kiện xử lý.
     /// </summary>
-    public class SessionController : HttpsSession
+    public class WebSession : HttpsSession
     {
         /// <summary>
         /// Khởi tạo một session mới với server đã cho.
         /// </summary>
         /// <param name="server">Server chủ quản session này.</param>
-        public SessionController(HttpsServer server) : base(server) { }
+        public WebSession(HttpsServer server) : base(server) { }
 
         /// <summary>
         /// Được gọi khi nhận một yêu cầu HTTP hợp lệ từ client.
@@ -34,7 +34,7 @@ namespace LuciferCore.Controller
         {
             var sm = GetModel<SessionManager>();
             var log = GetModel<LogManager>();
-            var modelServer = GetModel<ModelServer>();
+            var modelServer = GetModel<HostServer>();
 
 
             modelServer.UpdateNumberRequest();
@@ -56,7 +56,7 @@ namespace LuciferCore.Controller
             if (!EventDispatcher.CanAccess(request.Url, role))
             {
                 // Trả lỗi 403
-                SendResponseAsync(ResponseHelper.MakeJsonResponse(Response, new { message = "Forbidden: insufficient role" }, 403));
+                SendResponseAsync(Response.MakeJsonResponse(new { message = "Forbidden: insufficient role" }, 403));
                 return;
             }
 

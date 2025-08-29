@@ -1,6 +1,6 @@
 ﻿using LuciferCore.Core;
-using LuciferCore.Model;
 using LuciferCore.NetCoreServer;
+using LuciferCore.Server;
 
 
 namespace LuciferCore.Helper
@@ -45,7 +45,7 @@ namespace LuciferCore.Helper
                 }
 
                 // Lưu file
-                saveDir = Path.Combine(Simulation.GetModel<ModelServer>().WWW, saveDir);
+                saveDir = Path.Combine(Simulation.GetModel<HostServer>().WWW, saveDir);
                 newFileName = $"{newFileName}{extension}";
                 SaveFile(saveDir, newFileName, file.Content);
 

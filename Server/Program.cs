@@ -1,2 +1,9 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿
+using static LuciferCore.Core.Simulation;
+using LuciferCore.Server;
+
+var hostServer = GetModel<HostServer>();
+hostServer.Init();
+hostServer.Start();
+Console.WriteLine("Running...");
+while (true) ;

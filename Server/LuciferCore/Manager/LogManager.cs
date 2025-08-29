@@ -1,5 +1,6 @@
 ﻿using LuciferCore.Core;
 using System.Collections.Concurrent;
+using static LuciferCore.Core.Simulation;
 
 namespace LuciferCore.Manager
 {
@@ -14,11 +15,6 @@ namespace LuciferCore.Manager
         private readonly BlockingCollection<(LogSource source, string message)> _logQueue = new();
 
         /// <summary>
-        /// Sự kiện được kích hoạt khi có log mới, cho phép các lớp khác (như UI) lắng nghe và hiển thị log.
-        /// </summary>
-        public event Action<LogSource, string> OnLogPrinted;
-
-        /// <summary>
         /// Đường dẫn tệp log cho người dùng, được tạo theo ngày.
         /// </summary>
         private string _logUserFilePath;
@@ -27,6 +23,12 @@ namespace LuciferCore.Manager
         /// Đường dẫn tệp log cho hệ thống, được tạo theo ngày.
         /// </summary>
         private string _logSystemFilePath;
+
+        public LogManager()
+        {
+            InitLogFiles();
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+        }
 
         /// <summary>
         /// Định dạng log với thời gian, mức độ log và nội dung thông điệp.
@@ -67,7 +69,7 @@ namespace LuciferCore.Manager
             Log(message, level, LogSource.USER);
         }
 
-        public LogManager()
+        public void InitLogFiles()
         {
             // Tạo thư mục 'logs' nếu chưa tồn tại
             var logDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
@@ -82,7 +84,6 @@ namespace LuciferCore.Manager
             _logUserFilePath = Path.Combine(log_user, $"log_{date}.txt");
             _logSystemFilePath = Path.Combine(log_system, $"log_{date}.txt");
         }
-
         /// <summary>
         /// Vòng lặp xử lý log nền, lấy log từ hàng đợi, ghi vào tệp và phát sự kiện <see cref="OnLogPrinted"/>.
         /// </summary>
@@ -93,61 +94,68 @@ namespace LuciferCore.Manager
             var currentDate = DateTime.Now.Date;
             StreamWriter writerU = null;
             StreamWriter writerS = null;
+
             while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    // Mỗi lần có lỗi sẽ mở lại writer để tránh lỗi writer bị đóng hoặc bị khóa
-                    writerU = new StreamWriter(_logUserFilePath, true) { AutoFlush = true };
-                    writerS = new StreamWriter(_logSystemFilePath, true) { AutoFlush = true };
+                    writerU ??= new StreamWriter(_logUserFilePath, true) { AutoFlush = true };
+                    writerS ??= new StreamWriter(_logSystemFilePath, true) { AutoFlush = true };
 
-                    // Ghi log cho đến khi bị hủy hoặc CompleteAdding()
                     foreach (var (source, log) in _logQueue.GetConsumingEnumerable(token))
                     {
-                        // Nếu bị hủy giữa chừng
                         if (token.IsCancellationRequested) break;
 
-                        // Gửi log cho UI
-                        OnLogPrinted?.Invoke(source, log);
+                        // Rotate theo ngày
+                        if (DateTime.Now.Date != currentDate)
+                        {
+                            currentDate = DateTime.Now.Date;
 
-                        // Ghi log ra tệp
+                            writerU.Dispose();
+                            writerS.Dispose();
+
+                            InitLogFiles();
+
+                            writerU = new StreamWriter(_logUserFilePath, true) { AutoFlush = true };
+                            writerS = new StreamWriter(_logSystemFilePath, true) { AutoFlush = true };
+                        }
+
                         if (source == LogSource.USER)
                         {
-                            writerU.WriteLine(log);
+                            await writerU.WriteLineAsync(log);
                         }
                         else
                         {
-                            writerS.WriteLine(log);
+                            Console.WriteLine(log);
+                            await writerS.WriteLineAsync(log);
                         }
                     }
 
-                    // Nếu ra khỏi foreach do CompleteAdding(), thì kết thúc luôn
+                    // CompleteAdding => thoát luôn
                     break;
                 }
                 catch (OperationCanceledException)
                 {
-                    // Được phép dừng hợp lệ
-                    break;
+                    break; // Dừng hợp lệ
                 }
                 catch (Exception ex)
                 {
-                    // Ghi lỗi ra stderr và tiếp tục vòng while để thử lại
-                    Log(ex);
-                    await Task.Delay(1000, token);
-                }
-                finally
-                {
+                    Console.Error.WriteLine($"[LogManager] Error: {ex}");
                     writerU?.Dispose();
                     writerS?.Dispose();
+                    writerU = null;
+                    writerS = null;
+                    await Task.Delay(1000, token); // nghỉ 1s rồi retry
                 }
-
-                await Task.Delay(100, token);
             }
+
+            writerU?.Dispose();
+            writerS?.Dispose();
         }
 
         protected override void OnStarted()
         {
-            Simulation.GetModel<LogManager>().Log("SimulationManager started.", LogLevel.INFO, LogSource.SYSTEM);
+            GetModel<LogManager>().LogSystem("⚙️ LogManager started");
         }
 
         protected override void OnStopping()
@@ -157,7 +165,8 @@ namespace LuciferCore.Manager
 
         protected override void OnStopped()
         {
-            Simulation.GetModel<LogManager>().Log("SimulationManager stopped.", LogLevel.INFO, LogSource.SYSTEM);
+            // Không push thêm log nữa, chỉ in thẳng ra console
+            Console.WriteLine("⚙️ LogManager stopped");
         }
     }
 

@@ -15,7 +15,9 @@
 
 
 	<ItemGroup>
-	  <Folder Include="LuciferCore\Response\" />
+		<Content Include="extra_files\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 </Project>

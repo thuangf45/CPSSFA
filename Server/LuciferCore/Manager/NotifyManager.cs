@@ -1,8 +1,8 @@
-﻿using LuciferCore.Core;
-using Server.LuciferCore.Model;
+﻿using Server.LuciferCore.Model;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Mail;
+using static LuciferCore.Core.Simulation;
 
 namespace LuciferCore.Manager
 {
@@ -169,7 +169,7 @@ namespace LuciferCore.Manager
 
         protected override void OnStarted()
         {
-            Simulation.GetModel<LogManager>().Log("NotifyManager started.", LogLevel.INFO, LogSource.SYSTEM);
+            GetModel<LogManager>().LogSystem("⚙️ NotifyManager started");
         }
 
         protected override void OnStopping()
@@ -179,7 +179,7 @@ namespace LuciferCore.Manager
 
         protected override void OnStopped()
         {
-            Simulation.GetModel<LogManager>().Log("NotifyManager stopped.", LogLevel.INFO, LogSource.SYSTEM);
+            GetModel<LogManager>().LogSystem("⚙️ NotifyManager stopped");
         }
     }
 }

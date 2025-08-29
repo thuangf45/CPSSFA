@@ -1,6 +1,7 @@
 ﻿using LuciferCore.Core;
 using LuciferCore.Helper;
 using LuciferCore.NetCoreServer;
+using static LuciferCore.Core.Simulation;
 
 namespace LuciferCore.Manager
 {
@@ -289,12 +290,12 @@ namespace LuciferCore.Manager
 
         protected override void OnStarted()
         {
-            Simulation.GetModel<LogManager>().Log("SessionManager started.", LogLevel.INFO, LogSource.SYSTEM);
+            GetModel<LogManager>().LogSystem("⚙️ SessionManager started");
         }
 
         protected override void OnStopped()
         {
-            Simulation.GetModel<LogManager>().Log("SessionManager stopped.", LogLevel.INFO, LogSource.SYSTEM);
+            GetModel<LogManager>().LogSystem("⚙️ SessionManager stopped");
         }
     }
 }
