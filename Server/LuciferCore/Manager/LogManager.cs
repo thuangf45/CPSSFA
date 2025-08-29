@@ -12,7 +12,7 @@ namespace LuciferCore.Manager
         /// <summary>
         /// Hàng đợi log an toàn đa luồng để lưu trữ các mục log chờ xử lý.
         /// </summary>
-        private readonly BlockingCollection<(LogSource source, string message)> _logQueue = new();
+        private BlockingCollection<(LogSource source, string message)> _logQueue = new();
 
         /// <summary>
         /// Đường dẫn tệp log cho người dùng, được tạo theo ngày.
@@ -48,7 +48,11 @@ namespace LuciferCore.Manager
         public void Log(string message, LogLevel level = LogLevel.INFO, LogSource source = LogSource.USER)
         {
             var logEntry = FormatLog(message, level);
-            _logQueue.Add((source, logEntry)); // Lưu cả nguồn và thông điệp đã định dạng
+            var queue = _logQueue; // snapshot để tránh bị thay đổi giữa chừng
+            if (queue != null && !queue.IsAddingCompleted)
+            {
+                queue.Add((source, logEntry)); // Lưu cả nguồn và thông điệp đã định dạng
+            }
         }
 
         /// <summary>
@@ -151,6 +155,12 @@ namespace LuciferCore.Manager
 
             writerU?.Dispose();
             writerS?.Dispose();
+        }
+        public override void Restart()
+        {
+            Stop(); // Dừng task cũ + CompleteAdding()
+            _logQueue = new BlockingCollection<(LogSource source, string message)>(); // Tạo queue mới
+            Start(); // Chạy task mới với queue mới
         }
 
         protected override void OnStarted()

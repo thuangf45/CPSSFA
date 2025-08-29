@@ -13,7 +13,7 @@ namespace LuciferCore.Server
     /// <summary>
     /// Đại diện cho mô hình máy chủ, quản lý cấu hình, trạng thái và vòng lặp nền của ứng dụng máy chủ.
     /// </summary>
-    public class HostServer
+    public class HostServer : ManagerBase
     {
         /// <summary>
         /// Thư mục thực thi của ứng dụng.
@@ -92,10 +92,7 @@ namespace LuciferCore.Server
         /// </summary>
         public void UpdateNumberRequest()
         {
-            lock (this)
-            {
-                NumberRequest++;
-            }
+            Interlocked.Increment(ref numberRequest);
         }
 
         private int numberUser = 0;
@@ -113,6 +110,16 @@ namespace LuciferCore.Server
         {
             return new { NumberRequest, NumberUser };
         }
+
+        private NextCommand nextCommand = NextCommand.None;
+        private ServerState currentState = ServerState.Stopped;
+
+        public ServerState CurrentState => currentState;
+
+        // Gọi từ bên ngoài để đặt lệnh
+        public void RequestStart() => nextCommand = NextCommand.Start;
+        public void RequestStop() => nextCommand = NextCommand.Stop;
+        public void RequestRestart() => nextCommand = NextCommand.Restart;
 
         /// <summary>
         /// Khởi tạo các thành phần quản lý và MVP (Model-View-Presenter).
@@ -148,7 +155,7 @@ namespace LuciferCore.Server
         /// <summary>
         /// Khởi chạy các thành phần quản lý và máy chủ trong luồng nền.
         /// </summary>
-        public void Start()
+        public void StartService()
         {
             GetModel<LogManager>().Start();
             GetModel<SimulationManager>().Start();
@@ -156,28 +163,112 @@ namespace LuciferCore.Server
             GetModel<NotifyManager>().Start();
             GetModel<HostServer>().Server.Start();
         }
-
-
-        /// <summary>
-        /// Dừng tất cả các thành phần quản lý và máy chủ trong luồng nền.
-        /// </summary>
-        public void Stop()
+        public void StopService()
         {
-            Task.Run(() =>
+            GetModel<HostServer>().Server.Stop();
+            GetModel<SessionManager>().Stop();
+            GetModel<SimulationManager>().Stop();
+            GetModel<NotifyManager>().Stop();
+            GetModel<LogManager>().Stop();
+        }
+
+        public void RestartService()
+        {
+            GetModel<LogManager>().Restart();
+            GetModel<SessionManager>().Restart();
+            GetModel<SimulationManager>().Restart();
+            GetModel<NotifyManager>().Restart();
+            GetModel<HostServer>().Server.Restart();
+        }
+
+
+        protected override async Task Run(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    GetModel<SessionManager>().Stop();
-                    GetModel<SimulationManager>().Stop();
-                    GetModel<NotifyManager>().Stop();
-                    GetModel<LogManager>().Stop();
-                    GetModel<HostServer>().Server.Stop();
+                    switch (nextCommand)
+                    {
+                        case NextCommand.Stop:
+                            if (currentState != ServerState.Stopped && currentState != ServerState.Stopping)
+                            {
+                                currentState = ServerState.Stopping;
+                                StopService();
+                                currentState = ServerState.Stopped;
+                            }
+                            nextCommand = NextCommand.None;
+                            break;
+
+                        case NextCommand.Start:
+                            if (currentState != ServerState.Started && currentState != ServerState.Starting)
+                            {
+                                currentState = ServerState.Starting;
+                                StartService();
+                                currentState = ServerState.Started;
+                            }
+                            nextCommand = NextCommand.None;
+                            break;
+
+                        case NextCommand.Restart:
+                            currentState = ServerState.Restarting;
+                            RestartService();
+                            currentState = ServerState.Started;
+                            nextCommand = NextCommand.None;
+                            break;
+
+                        default:
+                            break;
+                    }
+
+                    await Task.Delay(TimeSpan.FromSeconds(1), token);
                 }
+                catch (TaskCanceledException) { }
                 catch (Exception ex)
                 {
                     GetModel<LogManager>().Log(ex);
+                    await Task.Delay(TimeSpan.FromSeconds(10), token);
                 }
-            });
+            }
         }
+
+        protected override void OnStarted()
+        {
+            Console.WriteLine("✅ HostServer started.");
+            // Khởi chạy server và các manager khác
+            StartService();
+            currentState = ServerState.Started;
+        }
+
+        protected override void OnStopping()
+        {
+            // Chuẩn bị dừng
+            currentState = ServerState.Stopping;
+            StopService();
+        }
+
+        protected override void OnStopped()
+        {
+            currentState = ServerState.Stopped;
+            Console.WriteLine("✅ HostServer stopped.");
+        }
+
+    }
+    public enum NextCommand
+    {
+        None,
+        Start,
+        Stop,
+        Restart
+    }
+
+    public enum ServerState
+    {
+        None,
+        Starting,
+        Started,
+        Stopping,
+        Stopped,
+        Restarting
     }
 }
