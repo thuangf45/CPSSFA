@@ -19,6 +19,9 @@ while (running)
             running = false;
             hostServer.Stop();
             break;
+        case "/start":
+            hostServer.RequestStart();
+            break;
         case "/stop":
             hostServer.RequestStop();
             break;

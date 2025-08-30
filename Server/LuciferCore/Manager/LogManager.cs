@@ -1,6 +1,7 @@
 ﻿using LuciferCore.Core;
 using System.Collections.Concurrent;
 using static LuciferCore.Core.Simulation;
+using static LuciferCore.Helper.LogHelper;
 
 namespace LuciferCore.Manager
 {
@@ -30,14 +31,6 @@ namespace LuciferCore.Manager
             Console.OutputEncoding = System.Text.Encoding.UTF8;
         }
 
-        /// <summary>
-        /// Định dạng log với thời gian, mức độ log và nội dung thông điệp.
-        /// </summary>
-        /// <param name="message">Nội dung log.</param>
-        /// <param name="level">Mức độ log (<see cref="LogLevel"/>).</param>
-        /// <returns>Chuỗi log được định dạng.</returns>
-        private string FormatLog(string message, LogLevel level)
-            => $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] {message}";
 
         /// <summary>
         /// Thêm một mục log mới vào hàng đợi để xử lý nền.
@@ -54,7 +47,6 @@ namespace LuciferCore.Manager
                 queue.Add((source, logEntry)); // Lưu cả nguồn và thông điệp đã định dạng
             }
         }
-
         /// <summary>
         /// Ghi log cho một ngoại lệ hệ thống.
         /// </summary>
@@ -108,7 +100,6 @@ namespace LuciferCore.Manager
 
                     foreach (var (source, log) in _logQueue.GetConsumingEnumerable(token))
                     {
-                        if (token.IsCancellationRequested) break;
 
                         // Rotate theo ngày
                         if (DateTime.Now.Date != currentDate)
@@ -130,7 +121,7 @@ namespace LuciferCore.Manager
                         }
                         else
                         {
-                            Console.WriteLine(log);
+                            LogConsole(log);
                             await writerS.WriteLineAsync(log);
                         }
                     }
@@ -176,7 +167,7 @@ namespace LuciferCore.Manager
         protected override void OnStopped()
         {
             // Không push thêm log nữa, chỉ in thẳng ra console
-            Console.WriteLine("⚙️ LogManager stopped");
+            LogConsole("⚙️ LogManager stopped", LogLevel.INFO, LogSource.SYSTEM);
         }
     }
 

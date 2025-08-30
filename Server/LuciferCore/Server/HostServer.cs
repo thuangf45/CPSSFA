@@ -1,5 +1,4 @@
 ﻿using LuciferCore.Controller;
-using LuciferCore.Core;
 using LuciferCore.Manager;
 using LuciferCore.NetCoreServer;
 using Microsoft.IdentityModel.Tokens;
@@ -7,6 +6,7 @@ using System.Net;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using static LuciferCore.Core.Simulation;
+using static LuciferCore.Helper.LogHelper;
 
 namespace LuciferCore.Server
 {
@@ -157,27 +157,21 @@ namespace LuciferCore.Server
         /// </summary>
         public void StartService()
         {
-            GetModel<LogManager>().Start();
-            GetModel<SimulationManager>().Start();
-            GetModel<SessionManager>().Start();
-            GetModel<NotifyManager>().Start();
-            GetModel<HostServer>().Server.Start();
+            // Nếu server đã null hoặc đã bị dừng -> tạo lại từ đầu
+            if (server == null || !server.IsStarted)
+            {
+                Setup(); // tạo lại context + server mới
+            }
+
+            Server.Start();
         }
         public void StopService()
         {
             GetModel<HostServer>().Server.Stop();
-            GetModel<SessionManager>().Stop();
-            GetModel<SimulationManager>().Stop();
-            GetModel<NotifyManager>().Stop();
-            GetModel<LogManager>().Stop();
         }
 
         public void RestartService()
         {
-            GetModel<LogManager>().Restart();
-            GetModel<SessionManager>().Restart();
-            GetModel<SimulationManager>().Restart();
-            GetModel<NotifyManager>().Restart();
             GetModel<HostServer>().Server.Restart();
         }
 
@@ -234,23 +228,30 @@ namespace LuciferCore.Server
 
         protected override void OnStarted()
         {
-            Console.WriteLine("✅ HostServer started.");
+            LogConsole("✅ HostServer started.\"", LogLevel.INFO, LogSource.SYSTEM);
             // Khởi chạy server và các manager khác
-            StartService();
-            currentState = ServerState.Started;
+            GetModel<LogManager>().Start();
+            GetModel<SimulationManager>().Start();
+            GetModel<SessionManager>().Start();
+            GetModel<NotifyManager>().Start();
+
         }
 
         protected override void OnStopping()
         {
             // Chuẩn bị dừng
             currentState = ServerState.Stopping;
-            StopService();
+            GetModel<NotifyManager>().Stop();
+            GetModel<SessionManager>().Stop();
+            GetModel<SimulationManager>().Stop();
+            Thread.Sleep(1);
+            GetModel<LogManager>().Stop();
         }
 
         protected override void OnStopped()
         {
             currentState = ServerState.Stopped;
-            Console.WriteLine("✅ HostServer stopped.");
+            LogConsole("✅ HostServer stopped", LogLevel.INFO, LogSource.SYSTEM);
         }
 
     }
