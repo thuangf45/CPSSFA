@@ -10,7 +10,6 @@ var running = true;
 
 while (running)
 {
-    Console.WriteLine("Type /quit or /stop to stop or /restart to restart.");
     var input = Console.ReadLine();
 
     switch (input)

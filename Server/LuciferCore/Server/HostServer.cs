@@ -53,7 +53,7 @@ namespace LuciferCore.Server
         /// <summary>
         /// Thư mục chứa nội dung tĩnh (web) của máy chủ.
         /// </summary>
-        private string www = Path.Combine(ExecutableDirectory, "extra_files", "www", "FE_CleanDesign");
+        private string www = Path.Combine(ExecutableDirectory, "extra_files", "www");
 
         /// <summary>
         /// Lấy hoặc thiết lập thư mục chứa nội dung tĩnh của máy chủ.

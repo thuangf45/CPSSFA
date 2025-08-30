@@ -64,6 +64,23 @@ namespace LuciferCore.Session
             EventDispatcher.Handle(request, this);
         }
 
+        protected override string GetStaticPath(HttpRequest request)
+        {
+            var path = base.GetStaticPath(request);
+
+            // 🔒 Chặn truy cập logs nếu không phải admin
+            if (path.StartsWith("/logs/", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!GetModel<SessionManager>().Authorization(request, out string userId, out UserRole role, this) || role != UserRole.Admin)
+                {
+                    // Không có quyền
+                    return default;
+                }
+            }
+
+            return path;
+        }
+
         /// <summary>
         /// Được gọi khi xảy ra lỗi trong quá trình nhận request.
         /// Ghi lại thông tin lỗi vào hệ thống log.
@@ -82,7 +99,7 @@ namespace LuciferCore.Session
         /// <param name="error">Loại lỗi socket gặp phải.</param>
         protected override void OnError(SocketError error)
         {
-            GetModel<LogManager>().Log($"HTTPS session caught an error: {error}", LogLevel.ERROR, LogSource.SYSTEM);
+            //GetModel<LogManager>().Log($"HTTPS session caught an error: {error}", LogLevel.ERROR, LogSource.SYSTEM);
         }
     }
 }

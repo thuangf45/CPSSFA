@@ -1,4 +1,6 @@
-﻿namespace LuciferCore.NetCoreServer
+﻿using Azure.Core;
+
+namespace LuciferCore.NetCoreServer
 {
     /// <summary>
     /// HTTPS session is used to receive/send HTTP requests/responses from the connected HTTPS client.
@@ -218,15 +220,7 @@
             // Try to get the cached response
             if (request.Method == "GET")
             {
-                // Nếu URL là "/" thì mặc định chuyển thành "/index.html"
-                var url = request.Url;
-                if (url == "/" || string.IsNullOrEmpty(url))
-                    url = "/index.html";
-
-                var index = url.IndexOf('?');
-                var path = index < 0 ? url : url.Substring(0, index);
-
-                var response = Cache.Find(path);
+                var response = Cache.Find(GetStaticPath(request));
                 if (response.Item1)
                 {
                     // Process the request with the cached response
@@ -237,6 +231,18 @@
 
             // Process the request
             OnReceivedRequest(request);
+        }
+        protected virtual string GetStaticPath(HttpRequest request)
+        {
+            // Nếu URL là "/" thì mặc định chuyển thành "/index.html"
+            var url = request.Url;
+            if (url == "/" || string.IsNullOrEmpty(url))
+                url = "/index.html";
+
+            var index = url.IndexOf('?');
+            var path = index < 0 ? url : url.Substring(0, index);
+
+            return path;
         }
     }
 }
