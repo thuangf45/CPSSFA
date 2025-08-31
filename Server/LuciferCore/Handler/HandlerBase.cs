@@ -4,7 +4,7 @@ using LuciferCore.Interface;
 using LuciferCore.NetCoreServer;
 using System.Reflection;
 
-namespace Server.LuciferCore.Handler
+namespace LuciferCore.Handler
 {
     /// <summary>
     /// Cung cấp lớp cơ sở cho các handler xử lý HTTP request theo phương thức (GET, POST, PUT, DELETE).
@@ -127,6 +127,7 @@ namespace Server.LuciferCore.Handler
         /// Xử lý HTTP HEAD request. Trả về header mà không có nội dung.
         /// </summary>
         /// <param name="session">Phiên kết nối hiện tại.</param>
+        [HttpHead("")]
         protected virtual void HeadHandle(HttpRequest request, HttpsSession session)
         {
             session.SendResponseAsync(session.Response.MakeHeadResponse());
@@ -135,6 +136,7 @@ namespace Server.LuciferCore.Handler
         /// <summary>
         /// Xử lý HTTP GET request. Ghi đè nếu cần custom riêng.
         /// </summary>
+        [HttpGet("")]
         protected virtual void GetHandle(HttpRequest request, HttpsSession session)
         {
             ErrorHandle(session, "Method GET chưa được triển khai cho endpoint này!");
@@ -143,6 +145,7 @@ namespace Server.LuciferCore.Handler
         /// <summary>
         /// Xử lý HTTP POST request. Ghi đè nếu cần custom riêng.
         /// </summary>
+        [HttpPost("")]
         protected virtual void PostHandle(HttpRequest request, HttpsSession session)
         {
             ErrorHandle(session, "Method POST chưa được triển khai cho endpoint này!");
@@ -151,6 +154,7 @@ namespace Server.LuciferCore.Handler
         /// <summary>
         /// Xử lý HTTP PUT request. Ghi đè nếu cần custom riêng.
         /// </summary>
+        [HttpPut("")]
         protected virtual void PutHandle(HttpRequest request, HttpsSession session)
         {
             ErrorHandle(session, "Method PUT chưa được triển khai cho endpoint này!");
@@ -159,6 +163,7 @@ namespace Server.LuciferCore.Handler
         /// <summary>
         /// Xử lý HTTP DELETE request. Ghi đè nếu cần custom riêng.
         /// </summary>
+        [HttpHead("")]
         protected virtual void DeleteHandle(HttpRequest request, HttpsSession session)
         {
             ErrorHandle(session, "Method DELETE chưa được triển khai cho endpoint này!");
@@ -167,6 +172,7 @@ namespace Server.LuciferCore.Handler
         /// <summary>
         /// Xử lý HTTP OPTIONS request. Trả về các phương thức được hỗ trợ.
         /// </summary>
+        [HttpOptions("")]
         protected virtual void OptionsHandle(HttpRequest request, HttpsSession session)
         {
             session.SendResponseAsync(session.Response.MakeOptionsResponse());
@@ -175,6 +181,7 @@ namespace Server.LuciferCore.Handler
         /// <summary>
         /// Xử lý HTTP TRACE request. Trả về nội dung của chính request gửi lên.
         /// </summary>
+        [HttpTrace("")]
         protected virtual void TraceHandle(HttpRequest request, HttpsSession session)
         {
             session.SendResponseAsync(session.Response.MakeTraceResponse(request));

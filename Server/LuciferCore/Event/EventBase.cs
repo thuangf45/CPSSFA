@@ -3,7 +3,7 @@ using LuciferCore.Helper;
 using LuciferCore.Interface;
 using LuciferCore.Manager;
 using LuciferCore.NetCoreServer;
-using Server.LuciferCore.Handler;
+using LuciferCore.Handler;
 
 namespace LuciferCore.Event
 {

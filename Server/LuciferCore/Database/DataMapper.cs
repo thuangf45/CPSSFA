@@ -1,7 +1,9 @@
-﻿using System.Data;
+﻿using LuciferCore.Core;
+using LuciferCore.Manager;
+using System.Data;
 using System.Reflection;
 
-namespace LuciferCore.Helpers
+namespace LuciferCore.Database
 {
     public static class DataMapper
     {
@@ -50,6 +52,15 @@ namespace LuciferCore.Helpers
             return result;
         }
 
+        public static void LogDictionary(Dictionary<string, object> dict)
+        {
+            if (dict == null) return;
+            foreach (var kv in dict)
+            {
+                Simulation.GetModel<LogManager>().Log($"[Dict] {kv.Key} = {kv.Value ?? "null"}");
+            }
+        }
+
         /// <summary>
         /// Tạo parameter dictionary nhanh bằng tuple (name, value).
         /// Key tự động thêm @ nếu thiếu. Null => DBNull.Value.
@@ -60,6 +71,42 @@ namespace LuciferCore.Helpers
                 p => NormalizeKey(p.name),
                 p => NormalizeValue(p.value)
             );
+        }
+
+        public static List<Dictionary<string, object>> DataTableToList(DataTable table)
+        {
+            var list = new List<Dictionary<string, object>>();
+            foreach (DataRow row in table.Rows)
+            {
+                var dict = new Dictionary<string, object>();
+                foreach (DataColumn col in table.Columns)
+                {
+                    dict[col.ColumnName] = row[col];
+                }
+                list.Add(dict);
+            }
+            return list;
+        }
+
+        public static List<T> MapToObjects<T>(List<Dictionary<string, object>> rows) where T : new()
+        {
+            var list = new List<T>();
+            var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (var row in rows)
+            {
+                T obj = new();
+                foreach (var prop in props)
+                {
+                    if (row.ContainsKey(prop.Name) && row[prop.Name] != null)
+                    {
+                        prop.SetValue(obj, Convert.ChangeType(row[prop.Name], prop.PropertyType));
+                    }
+                }
+                list.Add(obj);
+            }
+
+            return list;
         }
 
         /// <summary>

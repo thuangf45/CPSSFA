@@ -4,7 +4,7 @@ using Microsoft.Data.SqlClient;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
-namespace LuciferCore.Databasse
+namespace LuciferCore.Database
 {
     public static class DbAutoConnector
     {

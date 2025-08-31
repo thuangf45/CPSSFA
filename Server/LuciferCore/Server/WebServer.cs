@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using static LuciferCore.Core.Simulation;
 
-namespace LuciferCore.Controller
+namespace LuciferCore.Server
 {
     /// <summary>
     /// HTTPS server controller chịu trách nhiệm khởi tạo server, tạo session cho mỗi kết nối,

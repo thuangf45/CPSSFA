@@ -99,6 +99,46 @@ namespace LuciferCore.Manager
         }
 
         /// <summary>
+        /// Lấy ID người dùng từ HttpRequest dựa trên token, nếu hợp lệ.
+        /// </summary>
+        /// <param name="request">Yêu cầu HTTP chứa token.</param>
+        /// <returns>ID người dùng nếu hợp lệ, ngược lại trả về null.</returns>
+        public string? GetUserIdFromRequest(HttpRequest request)
+        {
+            string token = TokenHelper.GetToken(request);
+
+            if (TokenHelper.TryParseToken(token, out var sessionId))
+            {
+                return GetUserId(sessionId); // Dùng lại method có sẵn
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Kiểm tra role người dùng từ HttpRequest.
+        /// </summary>
+        public UserRole GetRoleFromRequest(HttpRequest request)
+        {
+            string token = TokenHelper.GetToken(request);
+
+            if (TokenHelper.TryParseToken(token, out var sessionId))
+            {
+                using (new ReadLock(_lock))
+                {
+                    if (_sessions.TryGetValue(sessionId, out var entry) && !entry.IsExpired)
+                    {
+                        return entry.Role;
+                    }
+                }
+
+                RemoveSession(sessionId); // hết hạn
+            }
+
+            return UserRole.Guest;
+        }
+
+        /// <summary>
         /// Kiểm tra xem một phiên có hợp lệ và liên kết với người dùng hay không.
         /// </summary>
         /// <param name="sessionId">ID của phiên cần kiểm tra.</param>

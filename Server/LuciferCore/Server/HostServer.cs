@@ -1,5 +1,4 @@
-﻿using LuciferCore.Controller;
-using LuciferCore.Manager;
+﻿using LuciferCore.Manager;
 using LuciferCore.NetCoreServer;
 using Microsoft.IdentityModel.Tokens;
 using System.Net;
@@ -53,7 +52,7 @@ namespace LuciferCore.Server
         /// <summary>
         /// Thư mục chứa nội dung tĩnh (web) của máy chủ.
         /// </summary>
-        private string www = Path.Combine(ExecutableDirectory, "extra_files", "www");
+        private string www = Path.Combine(ExecutableDirectory, "extra_files", "www", "User");
 
         /// <summary>
         /// Lấy hoặc thiết lập thư mục chứa nội dung tĩnh của máy chủ.
@@ -108,7 +107,7 @@ namespace LuciferCore.Server
         /// </summary>
         public object GetServerStatus()
         {
-            return new { NumberRequest, NumberUser };
+            return new { NumberRequest, NumberUser, currentState };
         }
 
         private NextCommand nextCommand = NextCommand.None;
@@ -167,12 +166,12 @@ namespace LuciferCore.Server
         }
         public void StopService()
         {
-            GetModel<HostServer>().Server.Stop();
+            Server.Stop();
         }
 
         public void RestartService()
         {
-            GetModel<HostServer>().Server.Restart();
+            Server.Restart();
         }
 
 
@@ -228,7 +227,7 @@ namespace LuciferCore.Server
 
         protected override void OnStarted()
         {
-            LogConsole("✅ HostServer started.\"", LogLevel.INFO, LogSource.SYSTEM);
+            LogConsole("✅ HostServer started.", LogLevel.INFO, LogSource.SYSTEM);
             // Khởi chạy server và các manager khác
             GetModel<LogManager>().Start();
             GetModel<SimulationManager>().Start();
@@ -241,6 +240,7 @@ namespace LuciferCore.Server
         {
             // Chuẩn bị dừng
             currentState = ServerState.Stopping;
+            StopService();
             GetModel<NotifyManager>().Stop();
             GetModel<SessionManager>().Stop();
             GetModel<SimulationManager>().Stop();

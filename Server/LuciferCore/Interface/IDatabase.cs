@@ -4,30 +4,15 @@
     /// Interface định nghĩa các thao tác cơ bản cho lớp quản lý cơ sở dữ liệu.
     /// Gồm truy xuất instance, lấy dữ liệu theo ID và xóa dữ liệu.
     /// </summary>
-    public interface IDatabase<T> where T : class, new()
+    public interface IDatabase
     {
-        /// <summary>
-        /// Trả về instance hiện tại của lớp triển khai cơ sở dữ liệu.
-        /// </summary>
-        /// <returns>Đối tượng <see cref="IDatabase"/> đại diện cho instance.</returns>
-        public IDatabase<T> GetInstance();
-
-        public int Create(T data);
-
-        /// <summary>
-        /// Lấy dữ liệu từ cơ sở dữ liệu theo ID.
-        /// </summary>
-        /// <param name="id">ID của bản ghi cần truy xuất.</param>
-        /// <returns>Đối tượng dữ liệu tìm được, hoặc null nếu không tồn tại.</returns>
-        public T Read(string id);
-
-        public int Update(string id, object data);
-
-        /// <summary>
-        /// Xóa một đối tượng dữ liệu ra khỏi cơ sở dữ liệu.
-        /// </summary>
-        /// <param name="data">Đối tượng cần xóa.</param>
-        /// <returns>Số lượng bản ghi bị xóa (thường là 0 hoặc 1).</returns>
-        public int Delete(object data);
+        object Create(object data, string sql);
+        List<Dictionary<string, object>> Read(object data, string sql);
+        object Update(object data, string sql);
+        object Delete(object data, string sql);
+        Task<object> CreateAsync(object data, string sql);
+        Task<List<Dictionary<string, object>>> ReadAsync(object data, string sql);
+        Task<object> UpdateAsync(object data, string sql);
+        Task<object> DeleteAsync(object data, string sql);
     }
 }

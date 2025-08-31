@@ -144,6 +144,12 @@ namespace LuciferCore.Helper
             Simulation.GetModel<LogManager>().Log($"ObjectHelper.LogObjectProperties: Type = {obj.GetType().Name}, Found {properties.Length} properties");
             foreach (var prop in properties)
             {
+                if (prop.GetIndexParameters().Length > 0)
+                {
+                    // Skip indexed property
+                    continue;
+                }
+
                 var value = prop.GetValue(obj);
                 Simulation.GetModel<LogManager>().Log($"[Object] {prop.Name} = {value ?? "null"} ({prop.PropertyType.Name})");
             }

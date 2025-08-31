@@ -2,21 +2,21 @@
 using Microsoft.Data.SqlClient;
 using System.Data;
 using static LuciferCore.Core.Simulation;
-using static LuciferCore.Databasse.DbAutoConnector;
+using static LuciferCore.Database.DbAutoConnector;
 
-namespace LuciferCore.Databasse
+namespace LuciferCore.Database
 {
     public class DatabaseHelper
     {
         private readonly string database = "KontrollerDB";
         private readonly string user = "sa";
-        private readonly string password = "Admin@123";
+        private readonly string password = "svcntt";
         private readonly string defaultIp = "192.168.1.25";
         private string _connectionString;
 
         public DatabaseHelper()
         {
-            _connectionString = $"Server=192.168.1.25;" +
+            _connectionString = $"Server=localhost;" +
                     $"Database={database};" +
                     $"User Id={user};Password={password};" +
                     "Pooling=true;" +
@@ -90,10 +90,10 @@ namespace LuciferCore.Databasse
         public DataTable ExecuteQuery(string sql, Dictionary<string, object>? parameters = null)
         {
             using var conn = new SqlConnection(_connectionString);
-            conn.Open();
             using var cmd = CreateCommand(conn, sql, parameters);
             using var adapter = new SqlDataAdapter(cmd);
             var dt = new DataTable();
+            conn.Open();
             adapter.Fill(dt);
             return dt;
         }
