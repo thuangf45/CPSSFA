@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace LuciferCore.Manager
+﻿namespace LuciferCore.Manager
 {
     /// <summary>
     /// Base class chuẩn cho các Manager chạy background task.

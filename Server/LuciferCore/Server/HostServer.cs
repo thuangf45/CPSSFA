@@ -62,7 +62,7 @@ namespace LuciferCore.Server
         /// <summary>
         /// Ngữ cảnh SSL cho máy chủ.   
         /// </summary>
-        private SslContext context;
+        private SslContext context;  
 
         /// <summary>
         /// Lấy ngữ cảnh SSL của máy chủ.
