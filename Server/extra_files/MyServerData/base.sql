@@ -21,10 +21,13 @@ CREATE TABLE [data_audit] (
 -- 1️ Thực thể gốc: Account
 -- ======================
 CREATE TABLE [account] (
-    account_id UNIQUEIDENTIFIER DEFAULT NEWID(),
+    account_id BIGINT IDENTITY(1,1) PRIMARY KEY,  -- ID tự tăng
+    account_guid UNIQUEIDENTIFIER DEFAULT NEWID(), -- GUID duy nhất toàn hệ thống
+
     created_at DATETIME DEFAULT GETDATE(),
     role NVARCHAR(50) DEFAULT 'User' NOT NULL,
-    PRIMARY KEY (account_id)
+
+    UNIQUE (account_guid) -- đảm bảo GUID không trùng
 );
 
 -- Check constraints
@@ -35,15 +38,19 @@ ADD CONSTRAINT CK_Account_CreatedAt CHECK (created_at <= GETDATE());
 -- 2️ Account Identity (multi-login)
 -- ======================
 CREATE TABLE [account_identity] (
-    identity_id UNIQUEIDENTIFIER DEFAULT NEWID(),
-    account_id UNIQUEIDENTIFIER NOT NULL,
+    identity_id BIGINT IDENTITY(1,1) PRIMARY KEY,  -- ID tự tăng
+    identity_guid UNIQUEIDENTIFIER DEFAULT NEWID(),
+
     provider NVARCHAR(50) NOT NULL,        -- local, google, facebook, phone...
     provider_key NVARCHAR(255) NOT NULL,   -- email, OAuth sub_id, phone
     password_hash VARBINARY(256) NULL,     -- chỉ cho provider = local
     created_at DATETIME DEFAULT GETDATE(),
     last_used DATETIME NULL,
     is_verified BIT DEFAULT 0,
-    PRIMARY KEY (identity_id)
+
+    account_id BIGINT NOT NULL,
+    account_guid UNIQUEIDENTIFIER NOT NULL,
+    UNIQUE (identity_guid)
 );
 
 
@@ -52,6 +59,9 @@ ALTER TABLE [account_identity]
 ADD CONSTRAINT FK_AccountIdentity_Account_AccountId
 FOREIGN KEY(account_id) REFERENCES [account](account_id);
 
+ALTER TABLE [account_identity]
+ADD CONSTRAINT FK_AccountIdentity_Account_AccountGuid
+FOREIGN KEY(account_guid) REFERENCES [account](account_guid);
 
 -- === Unique & Check ===
 ALTER TABLE [account_identity]
@@ -73,7 +83,9 @@ CHECK (last_used IS NULL OR last_used <= GETDATE());
 -- 3️ User Profile
 -- ======================
 CREATE TABLE [user] (
-    account_id UNIQUEIDENTIFIER NOT NULL,
+    user_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_guid UNIQUEIDENTIFIER DEFAULT NEWID(),
+
     full_name NVARCHAR(200) NOT NULL,
     avatar NVARCHAR(500) NULL,  --https://cdn2.fptshop.com.vn/small/avatar_trang_1_cd729c335b.jpg
     bio NVARCHAR(500) NULL,
@@ -81,13 +93,21 @@ CREATE TABLE [user] (
     birthday DATE DEFAULT NULL,
     gender NVARCHAR(20) DEFAULT 'Unknown',
     updated_at DATETIME DEFAULT GETDATE(),
-    PRIMARY KEY (account_id)
+
+    account_id BIGINT NOT NULL,
+    account_guid UNIQUEIDENTIFIER,
+    
+    UNIQUE (user_guid)
 );
 
 -- === FK ===
 ALTER TABLE [user]
-ADD CONSTRAINT FK_User_Account
+ADD CONSTRAINT FK_User_Account_AccountId
 FOREIGN KEY(account_id) REFERENCES [account](account_id);
+
+ALTER TABLE [user]
+ADD CONSTRAINT FK_User_Account_AccountGuid
+FOREIGN KEY(account_guid) REFERENCES [account](account_guid);
 
 -- === Check constraints ===
 ALTER TABLE [user]
@@ -121,7 +141,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'user',
-        CAST(i.account_id AS NVARCHAR(100)),
+        CAST(i.user_guid AS NVARCHAR(100)),
         'INSERT',
         (SELECT i.* FROM inserted i FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM inserted i;
@@ -137,21 +157,17 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'user',
-        CAST(i.account_id AS NVARCHAR(100)),
+        CAST(i.user_guid AS NVARCHAR(100)),
         'UPDATE',
         (
             SELECT 
-                (SELECT d.* FROM deleted d WHERE d.account_id = i.account_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS OldData,
-                (SELECT i.* FROM inserted i2 WHERE i2.account_id = i.account_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS NewData
+                (SELECT d.* FROM deleted d WHERE d.user_id = i.user_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS OldData,
+                (SELECT i.* FROM inserted i2 WHERE i2.user_id = i.user_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS NewData
             FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
         )
     FROM inserted i
-    JOIN deleted d ON i.account_id = d.account_id;
+    JOIN deleted d ON i.user_id = d.user_id;
 
-    UPDATE u
-    SET updated_at = GETDATE()
-    FROM [user] u
-    JOIN inserted i ON u.account_id = i.account_id;
 END;
 GO
 
@@ -164,7 +180,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'user',
-        CAST(d.account_id AS NVARCHAR(100)),
+        CAST(d.user_guid AS NVARCHAR(100)),
         'DELETE',
         (SELECT d.* FROM deleted d FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM deleted d;
@@ -175,18 +191,26 @@ GO
 -- 4️ User Bank
 -- ======================
 CREATE TABLE [user_bank] (
+    user_bank_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     account_number NVARCHAR(100),
-    account_id UNIQUEIDENTIFIER NOT NULL,
+
     account_amount BIGINT DEFAULT 0,
     currency NVARCHAR(20) DEFAULT 'USD',   -- linh hoạt cho crypto
     updated_at DATETIME DEFAULT GETDATE(),
-    PRIMARY KEY (account_number)
+    
+    user_guid UNIQUEIDENTIFIER,
+    user_id BIGINT NOT NULL,
+    UNIQUE (account_number)
 );
 
 -- === FK ===
 ALTER TABLE [user_bank]
-ADD CONSTRAINT FK_UserBank_User
-FOREIGN KEY(account_id) REFERENCES [user](account_id);
+ADD CONSTRAINT FK_UserBank_User_UserId
+FOREIGN KEY(user_id) REFERENCES [user](user_id);
+
+ALTER TABLE [user_bank]
+ADD CONSTRAINT FK_UserBank_User_UserGuid
+FOREIGN KEY(user_guid) REFERENCES [user](user_guid);
 
 -- === Check constraints ===
 ALTER TABLE [user_bank]
@@ -232,18 +256,13 @@ BEGIN
         'UPDATE',
         (
             SELECT 
-                (SELECT d.* FROM deleted d WHERE d.account_id = i.account_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS OldData,
-                (SELECT i.* FROM inserted i2 WHERE i2.account_id = i.account_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS NewData
+                (SELECT d.* FROM deleted d WHERE d.user_bank_id = i.user_bank_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS OldData,
+                (SELECT i.* FROM inserted i2 WHERE i2.user_bank_id = i.user_bank_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS NewData
             FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
         )
     FROM inserted i
-    JOIN deleted d ON i.account_id = d.account_id;
+    JOIN deleted d ON i.user_bank_id = d.user_bank_id;
 
-
-    UPDATE ub
-    SET updated_at = GETDATE()
-    FROM user_bank ub
-    JOIN inserted i ON ub.account_number = i.account_number;
 END;
 GO
 
@@ -268,19 +287,29 @@ GO
 -- 5️ User Society
 -- ======================
 CREATE TABLE [user_society] (
-    account_id UNIQUEIDENTIFIER NOT NULL,
+    user_society_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_society_guid UNIQUEIDENTIFIER DEFAULT NEWID(),
+
     reputation_score INT DEFAULT 100,
     number_follower INT DEFAULT 0,
     number_following INT DEFAULT 0,
     number_post INT DEFAULT 0,
     number_comment INT DEFAULT 0,
-    PRIMARY KEY(account_id)
+
+    user_guid UNIQUEIDENTIFIER NOT NULL,
+    user_id BIGINT NOT NULL,
+
+    UNIQUE (user_society_guid)
 );
 
 -- === FK ===
 ALTER TABLE [user_society]
-ADD CONSTRAINT FK_UserSociety_User
-FOREIGN KEY(account_id) REFERENCES [user](account_id);
+ADD CONSTRAINT FK_UserSociety_User_UserId
+FOREIGN KEY(user_id) REFERENCES [user](user_id);
+
+ALTER TABLE [user_society]
+ADD CONSTRAINT FK_UserSociety_User_UserGuid
+FOREIGN KEY(user_guid) REFERENCES [user](user_guid);
 
 -- === Check constraints ===
 ALTER TABLE [user_society]
@@ -304,7 +333,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'user_society',
-        CAST(i.account_id AS NVARCHAR(100)),
+        CAST(i.user_society_guid AS NVARCHAR(100)),
         'INSERT',
         (SELECT i.* FROM inserted i FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM inserted i;
@@ -320,16 +349,16 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'user_society',
-        CAST(i.account_id AS NVARCHAR(100)),
+        CAST(i.user_society_guid AS NVARCHAR(100)),
         'UPDATE',
         (
             SELECT 
-                (SELECT d.* FROM deleted d WHERE d.account_id = i.account_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS OldData,
-                (SELECT i.* FROM inserted i2 WHERE i2.account_id = i.account_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS NewData
+                (SELECT d.* FROM deleted d WHERE d.user_society_id = i.user_society_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS OldData,
+                (SELECT i.* FROM inserted i2 WHERE i2.user_society_id = i.user_society_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS NewData
             FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
         )
     FROM inserted i
-    JOIN deleted d ON i.account_id = d.account_id;
+    JOIN deleted d ON i.user_society_id = d.user_society_id;
 END;
 GO
 
@@ -342,7 +371,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'user_society',
-        CAST(d.account_id AS NVARCHAR(100)),
+        CAST(d.user_society_guid AS NVARCHAR(100)),
         'DELETE',
         (SELECT d.* FROM deleted d FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM deleted d;
@@ -354,25 +383,39 @@ GO
 -- 5.1 Post
 -- ======================
 CREATE TABLE [post](
-    post_id UNIQUEIDENTIFIER DEFAULT NEWID(),
-    parent_id UNIQUEIDENTIFIER NULL,     -- NULL = post gốc, không NULL = comment
+    post_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    post_guid UNIQUEIDENTIFIER DEFAULT NEWID(),
+
     content NVARCHAR(1000),
     created_at DATETIME DEFAULT GETDATE(),
     updated_at DATETIME DEFAULT GETDATE(),
     number_comment INT DEFAULT 0,
     number_reaction INT DEFAULT 0,
-    account_id UNIQUEIDENTIFIER NOT NULL,
-    PRIMARY KEY(post_id)
+
+    parent_id BIGINT NULL,     -- NULL = post gốc, không NULL = comment
+    parent_guid UNIQUEIDENTIFIER NULL,     -- NULL = post gốc, không NULL = comment
+    user_society_id BIGINT NOT NULL,
+    user_society_guid UNIQUEIDENTIFIER NOT NULL,
+
+    UNIQUE (post_guid)
 );
 
 -- === FK ===
 ALTER TABLE [post]
-ADD CONSTRAINT FK_Post_Post
+ADD CONSTRAINT FK_Post_Post_ParentId
 FOREIGN KEY(parent_id) REFERENCES [post](post_id);
 
 ALTER TABLE [post]
-ADD CONSTRAINT FK_Post_UserSociety
-FOREIGN KEY(account_id) REFERENCES [user_society](account_id);
+ADD CONSTRAINT FK_Post_Post_ParentGuid
+FOREIGN KEY(parent_guid) REFERENCES [post](post_guid);
+
+ALTER TABLE [post]
+ADD CONSTRAINT FK_Post_UserSociety_UserSocietyId
+FOREIGN KEY(user_society_id) REFERENCES [user_society](user_society_id);
+
+ALTER TABLE [post]
+ADD CONSTRAINT FK_Post_UserSociety_UserSocietyGuid
+FOREIGN KEY(user_society_guid) REFERENCES [user_society](user_society_guid);
 
 -- === Check constraints ===
 ALTER TABLE [post]
@@ -392,8 +435,9 @@ CHECK (
 ALTER TABLE [post]
 ADD CONSTRAINT CK_Post_Parent
 CHECK (
-    parent_id IS NULL OR
-    parent_id != post_id
+    (parent_id IS NULL AND parent_guid IS NULL)
+    OR
+    (parent_id != post_id AND parent_guid != post_guid)
 );
 
 GO
@@ -407,7 +451,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'post',
-        CAST(i.post_id AS NVARCHAR(100)),
+        CAST(i.post_guid AS NVARCHAR(100)),
         'INSERT',
         (SELECT i.* FROM inserted i FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM inserted i;
@@ -423,7 +467,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'post',
-        CAST(i.post_id AS NVARCHAR(100)),
+        CAST(i.post_guid AS NVARCHAR(100)),
         'UPDATE',
         (
             SELECT 
@@ -434,11 +478,6 @@ BEGIN
     FROM inserted i
     JOIN deleted d ON i.post_id = d.post_id;
 
-    
-    UPDATE p
-    SET updated_at = GETDATE()
-    FROM post p
-    JOIN inserted i ON p.post_id = i.post_id;
 END;
 GO
 
@@ -451,15 +490,10 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'post',
-        CAST(d.post_id AS NVARCHAR(100)),
+        CAST(d.post_guid AS NVARCHAR(100)),
         'DELETE',
         (SELECT d.* FROM deleted d FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM deleted d;
-
-    -- Xoá comment con (nếu có) theo post bị xoá
-    DELETE p
-    FROM post p
-    JOIN deleted d ON p.parent_id = d.post_id;
 END;
 GO
 
@@ -468,23 +502,37 @@ GO
 -- 5.2 Reaction
 -- ======================
 CREATE TABLE [reaction](
-    reaction_id UNIQUEIDENTIFIER DEFAULT NEWID(),
+    reaction_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    reaction_guid UNIQUEIDENTIFIER DEFAULT NEWID(),
+
     reaction_type NVARCHAR(20),
     created_at DATETIME DEFAULT GETDATE(),
     updated_at DATETIME DEFAULT GETDATE(),
-    post_id UNIQUEIDENTIFIER NOT NULL,
-    account_id UNIQUEIDENTIFIER NOT NULL,
-    PRIMARY KEY(reaction_id)
+
+    post_id BIGINT NOT NULL,
+    post_guid UNIQUEIDENTIFIER NOT NULL,
+    user_society_id BIGINT NOT NULL,
+    user_society_guid UNIQUEIDENTIFIER NOT NULL,
+
+    UNIQUE(reaction_guid)
 );
 
 -- === FK ===
 ALTER TABLE [reaction]
-ADD CONSTRAINT FK_Reaction_Post
+ADD CONSTRAINT FK_Reaction_Post_PostId
 FOREIGN KEY(post_id) REFERENCES [post](post_id);
 
 ALTER TABLE [reaction]
-ADD CONSTRAINT FK_Reaction_UserSociety
-FOREIGN KEY(account_id) REFERENCES [user_society](account_id);
+ADD CONSTRAINT FK_Reaction_Post_PostGuid
+FOREIGN KEY(post_guid) REFERENCES [post](post_guid);
+
+ALTER TABLE [reaction]
+ADD CONSTRAINT FK_Reaction_UserSocietyId
+FOREIGN KEY(user_society_id) REFERENCES [user_society](user_society_id);
+
+ALTER TABLE [reaction]
+ADD CONSTRAINT FK_Reaction_UserSocietyGuid
+FOREIGN KEY(user_society_guid) REFERENCES [user_society](user_society_guid);
 
 -- === Check constraints ===
 ALTER TABLE [reaction]
@@ -511,7 +559,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'reaction',
-        CAST(i.reaction_id AS NVARCHAR(100)),
+        CAST(i.reaction_guid AS NVARCHAR(100)),
         'INSERT',
         (SELECT i.* FROM inserted i FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM inserted i;
@@ -528,7 +576,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'reaction',
-        CAST(i.reaction_id AS NVARCHAR(100)),
+        CAST(i.reaction_guid AS NVARCHAR(100)),
         'UPDATE',
         (
             SELECT 
@@ -538,11 +586,6 @@ BEGIN
         )
     FROM inserted i
     JOIN deleted d ON i.reaction_id = d.reaction_id;
-
-    UPDATE r
-    SET updated_at = GETDATE()
-    FROM reaction r
-    JOIN inserted i ON r.reaction_id = i.reaction_id;
 
 END;
 GO
@@ -556,7 +599,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'reaction',
-        CAST(d.reaction_id AS NVARCHAR(100)),
+        CAST(d.reaction_guid AS NVARCHAR(100)),
         'DELETE',
         (SELECT d.* FROM deleted d FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM deleted d;
@@ -569,7 +612,9 @@ GO
 -- 6 User Shop
 -- ======================
 CREATE TABLE [shop](
-    shop_id UNIQUEIDENTIFIER DEFAULT NEWID(),
+    shop_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    shop_guid UNIQUEIDENTIFIER DEFAULT NEWID(),
+
     shop_name NVARCHAR(100) NOT NULL,
     shop_description NVARCHAR(1000) NULL,
     shop_address NVARCHAR(500) NULL,
@@ -581,18 +626,25 @@ CREATE TABLE [shop](
     number_item INT DEFAULT 0,
     number_order INT DEFAULT 0, 
     number_review INT DEFAULT 0,
-
     is_active BIT DEFAULT 1,
+
     created_at DATETIME DEFAULT GETDATE(),
     updated_at DATETIME DEFAULT GETDATE(),
-    account_id UNIQUEIDENTIFIER NOT NULL,
-    PRIMARY KEY(shop_id)
+
+    user_id BIGINT NOT NULL,
+    user_guid UNIQUEIDENTIFIER NOT NULL,
+    
+    UNIQUE (shop_guid)
 );
 
 -- === FK ===
 ALTER TABLE [shop]
-ADD CONSTRAINT FK_Shop_User
-FOREIGN KEY(account_id) REFERENCES [user](account_id);
+ADD CONSTRAINT FK_Shop_User_UserId
+FOREIGN KEY(user_id) REFERENCES [user](user_id);
+
+ALTER TABLE [shop]
+ADD CONSTRAINT FK_Shop_User_UserGuid
+FOREIGN KEY(user_guid) REFERENCES [user](user_guid);
 
 -- === Check constraints ===
 ALTER TABLE [shop]
@@ -629,7 +681,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'shop',
-        CAST(i.shop_id AS NVARCHAR(100)),
+        CAST(i.shop_guid AS NVARCHAR(100)),
         'INSERT',
         (SELECT i.* FROM inserted i FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM inserted i;
@@ -645,7 +697,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'shop',
-        CAST(i.shop_id AS NVARCHAR(100)),
+        CAST(i.shop_guid AS NVARCHAR(100)),
         'UPDATE',
         (
             SELECT 
@@ -656,11 +708,6 @@ BEGIN
     FROM inserted i
     JOIN deleted d ON i.shop_id = d.shop_id;
 
-    -- Auto update updated_at
-    UPDATE s
-    SET updated_at = GETDATE()
-    FROM shop s
-    JOIN inserted i ON s.shop_id = i.shop_id;
 
 END;
 GO
@@ -674,7 +721,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'shop',
-        CAST(d.shop_id AS NVARCHAR(100)),
+        CAST(d.shop_guid AS NVARCHAR(100)),
         'DELETE',
         (SELECT d.* FROM deleted d FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM deleted d;
@@ -685,7 +732,9 @@ GO
 -- 6.1 Order
 -- ======================
 CREATE TABLE [order](
-    order_id UNIQUEIDENTIFIER DEFAULT NEWID(),
+    order_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    order_guid UNIQUEIDENTIFIER DEFAULT NEWID(),
+
     order_name NVARCHAR(100) NULL,
     order_description NVARCHAR(1000) NULL,
     order_details NVARCHAR(MAX) NULL,        
@@ -706,19 +755,30 @@ CREATE TABLE [order](
     created_at DATETIME DEFAULT GETDATE(),
     updated_at DATETIME DEFAULT GETDATE(),
 
-    shop_id UNIQUEIDENTIFIER NOT NULL,
-    account_id UNIQUEIDENTIFIER NULL,
-    PRIMARY KEY(order_id)
+    shop_id BIGINT NOT NULL,
+    shop_guid UNIQUEIDENTIFIER NOT NULL,
+    user_id BIGINT NULL,
+    user_guid UNIQUEIDENTIFIER NULL,
+    
+    UNIQUE (order_guid)
 );
 
 -- === FK ===
 ALTER TABLE [order]
-ADD CONSTRAINT FK_Order_User
-FOREIGN KEY(account_id) REFERENCES [user](account_id);
+ADD CONSTRAINT FK_Order_User_UserId
+FOREIGN KEY(user_id) REFERENCES [user](user_id);
 
 ALTER TABLE [order]
-ADD CONSTRAINT FK_Order_Shop
+ADD CONSTRAINT FK_Order_User_UserGuid
+FOREIGN KEY(user_guid) REFERENCES [user](user_guid);
+
+ALTER TABLE [order]
+ADD CONSTRAINT FK_Order_Shop_ShopId
 FOREIGN KEY(shop_id) REFERENCES [shop](shop_id);
+
+ALTER TABLE [order]
+ADD CONSTRAINT FK_Order_Shop_ShopGuid
+FOREIGN KEY(shop_guid) REFERENCES [shop](shop_guid);
 
 -- === Check constraints ===
 ALTER TABLE [order]
@@ -727,14 +787,16 @@ CHECK (
     (form_shopping IN ('offline', 'online')) 
     AND
     (form_shopping = 'offline' AND
-    account_id IS NULL AND
+    user_id IS NULL AND
+    user_guid IS NULL AND
     shoppers_address IS NULL AND
     shoppers_phone_number IS NULL AND
     shipping_status IS NULL AND
     payment_status IN ('paid')) 
     OR
     (form_shopping = 'online' AND
-    account_id IS NOT NULL AND
+    user_id IS NOT NULL AND
+    user_guid IS NOT NULL AND
     shoppers_address IS NOT NULL AND
     shoppers_phone_number IS NOT NULL AND
     shipping_status IS NOT NULL AND
@@ -796,7 +858,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'order',
-        CAST(i.order_id AS NVARCHAR(100)),
+        CAST(i.order_guid AS NVARCHAR(100)),
         'INSERT',
         (SELECT i.* FROM inserted i FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM inserted i;
@@ -812,7 +874,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'order',
-        CAST(i.order_id AS NVARCHAR(100)),
+        CAST(i.order_guid AS NVARCHAR(100)),
         'UPDATE',
         (
             SELECT 
@@ -823,11 +885,6 @@ BEGIN
     FROM inserted i
     JOIN deleted d ON i.order_id = d.order_id;
 
-    -- Auto update updated_at
-    UPDATE o
-    SET updated_at = GETDATE()
-    FROM [order] o
-    JOIN inserted i ON o.order_id = i.order_id;
 END;
 GO
 
@@ -840,7 +897,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'order',
-        CAST(d.order_id AS NVARCHAR(100)),
+        CAST(d.order_guid AS NVARCHAR(100)),
         'DELETE',
         (SELECT d.* FROM deleted d FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM deleted d;
@@ -852,7 +909,9 @@ GO
 -- 6.2 voucher
 -- ======================
 CREATE TABLE [voucher] (
-    voucher_id UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
+    voucher_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    voucher_guid UNIQUEIDENTIFIER DEFAULT NEWID(),
+
     code NVARCHAR(50) UNIQUE NOT NULL,        -- mã voucher duy nhất
     description NVARCHAR(200) NULL,
 
@@ -903,7 +962,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT
         'voucher',
-        CAST(i.voucher_id AS NVARCHAR(100)),
+        CAST(i.voucher_guid AS NVARCHAR(100)),
         'INSERT',
         (SELECT i.* FROM inserted i FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM inserted i;
@@ -919,7 +978,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT
         'voucher',
-        CAST(i.voucher_id AS NVARCHAR(100)),
+        CAST(i.voucher_guid AS NVARCHAR(100)),
         'UPDATE',
         (
             SELECT
@@ -930,11 +989,6 @@ BEGIN
     FROM inserted i
     JOIN deleted d ON i.voucher_id = d.voucher_id;
 
-    -- Auto update updated_at
-    UPDATE v
-    SET updated_at = GETDATE()
-    FROM [voucher] v
-    JOIN inserted i ON v.voucher_id = i.voucher_id;
 END;
 GO
 
@@ -947,7 +1001,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT
         'voucher',
-        CAST(d.voucher_id AS NVARCHAR(100)),
+        CAST(d.voucher_guid AS NVARCHAR(100)),
         'DELETE',
         (SELECT d.* FROM deleted d FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM deleted d;
@@ -958,23 +1012,35 @@ GO
 -- 6.3 Item
 -- ======================
 CREATE TABLE [item](
-    item_id UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
+    item_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    item_guid UNIQUEIDENTIFIER DEFAULT NEWID(),
+
     item_name NVARCHAR(200) NOT NULL,
     item_description NVARCHAR(1000) NULL,
+
     avg_rating DECIMAL(3,2) DEFAULT 0,
     number_review INT DEFAULT 0,
     price DECIMAL(18,2) NOT NULL DEFAULT 0,
     stock INT NOT NULL DEFAULT 0,            -- số lượng tồn kho
-    shop_id UNIQUEIDENTIFIER NOT NULL,       -- item thuộc shop nào
     is_active BIT DEFAULT 1,                 -- có đang bán hay không
+
     created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME DEFAULT GETDATE()
+    updated_at DATETIME DEFAULT GETDATE(),
+
+    shop_id BIGINT NOT NULL,       -- item thuộc shop nào
+    shop_guid UNIQUEIDENTIFIER NOT NULL,
+
+    UNIQUE (item_guid)
 );
 
 -- === FK ===
 ALTER TABLE [item]
-ADD CONSTRAINT FK_Item_Shop
+ADD CONSTRAINT FK_Item_Shop_ShopId
 FOREIGN KEY(shop_id) REFERENCES [shop](shop_id);
+
+ALTER TABLE [item]
+ADD CONSTRAINT FK_Item_Shop_ShopGuid
+FOREIGN KEY(shop_guid) REFERENCES [shop](shop_guid);
 
 -- === Check constraints ===
 ALTER TABLE [item]
@@ -1001,7 +1067,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'item',
-        CAST(i.item_id AS NVARCHAR(100)),
+        CAST(i.item_guid AS NVARCHAR(100)),
         'INSERT',
         (SELECT i.* FROM inserted i FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM inserted i;
@@ -1017,7 +1083,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'item',
-        CAST(i.item_id AS NVARCHAR(100)),
+        CAST(i.item_guid AS NVARCHAR(100)),
         'UPDATE',
         (
             SELECT 
@@ -1028,11 +1094,6 @@ BEGIN
     FROM inserted i
     JOIN deleted d ON i.item_id = d.item_id;
 
-    -- Auto update updated_at
-    UPDATE it
-    SET updated_at = GETDATE()
-    FROM item it
-    JOIN inserted i ON it.item_id = i.item_id;
 END;
 GO
 
@@ -1045,7 +1106,7 @@ BEGIN
     INSERT INTO data_audit (table_name, record_id, action_type, data)
     SELECT 
         'item',
-        CAST(d.item_id AS NVARCHAR(100)),
+        CAST(d.item_guid AS NVARCHAR(100)),
         'DELETE',
         (SELECT d.* FROM deleted d FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM deleted d;
@@ -1057,17 +1118,29 @@ GO
 -- 6.4 Completed orders
 -- ======================
 CREATE TABLE [completed_orders](
-    completed_orders_id UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
-    account_id UNIQUEIDENTIFIER NOT NULL,
+    completed_orders_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    completed_orders_guid UNIQUEIDENTIFIER DEFAULT NEWID(),
+
     orders_details NVARCHAR(MAX) NULL,        -- JSON mảng các order
+
     created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME DEFAULT GETDATE()
+    updated_at DATETIME DEFAULT GETDATE(),
+
+    user_id BIGINT NOT NULL,
+    user_guid UNIQUEIDENTIFIER NOT NULL,
+
+    UNIQUE (completed_orders_guid)
+
 );
 
 -- === FK ===
 ALTER TABLE [completed_orders]
-ADD CONSTRAINT FK_CompletedOrders_User
-FOREIGN KEY(account_id) REFERENCES [user](account_id);
+ADD CONSTRAINT FK_CompletedOrders_User_UserId
+FOREIGN KEY(user_id) REFERENCES [user](user_id);
+
+ALTER TABLE [completed_orders]
+ADD CONSTRAINT FK_CompletedOrders_User_UserGuid
+FOREIGN KEY(user_guid) REFERENCES [user](user_guid);
 
 -- === Check constraints ===
 ALTER TABLE [completed_orders]
@@ -1085,7 +1158,7 @@ BEGIN
     INSERT INTO data_audit(table_name, record_id, action_type, data)
     SELECT
         'completed_orders',
-        CAST(i.completed_orders_id AS NVARCHAR(100)),
+        CAST(i.completed_orders_guid AS NVARCHAR(100)),
         'INSERT',
         (SELECT i.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM inserted i;
@@ -1101,7 +1174,7 @@ BEGIN
     INSERT INTO data_audit(table_name, record_id, action_type, data)
     SELECT
         'completed_orders',
-        CAST(i.completed_orders_id AS NVARCHAR(100)),
+        CAST(i.completed_orders_guid AS NVARCHAR(100)),
         'UPDATE',
         (
             SELECT 
@@ -1112,10 +1185,6 @@ BEGIN
     FROM inserted i
     JOIN deleted d ON i.completed_orders_id = d.completed_orders_id;
 
-    UPDATE co
-    SET updated_at = GETDATE()
-    FROM completed_orders co
-    JOIN inserted i ON co.completed_orders_id = i.completed_orders_id;
 END;
 GO
 
@@ -1128,7 +1197,7 @@ BEGIN
     INSERT INTO data_audit(table_name, record_id, action_type, data)
     SELECT
         'completed_orders',
-        CAST(d.completed_orders_id AS NVARCHAR(100)),
+        CAST(d.completed_orders_guid AS NVARCHAR(100)),
         'DELETE',
         (SELECT d.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM deleted d;
@@ -1139,16 +1208,28 @@ GO
 -- 6.5 Review
 -- ======================
 CREATE TABLE [cart](
-    cart_id UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
-    account_id UNIQUEIDENTIFIER NOT NULL,
+    cart_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    cart_guid UNIQUEIDENTIFIER DEFAULT NEWID(),
+
     cart_details NVARCHAR(MAX) NULL,   -- JSON mảng các item: item_id, quantity, price
+
     created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME DEFAULT GETDATE()
+    updated_at DATETIME DEFAULT GETDATE(),
+
+    user_id BIGINT NOT NULL,
+    user_guid UNIQUEIDENTIFIER NOT NULL,
+
+    UNIQUE (cart_guid)
+
 );
 -- === FK ===
 ALTER TABLE [cart]
-ADD CONSTRAINT FK_Cart_User
-FOREIGN KEY(account_id) REFERENCES [user](account_id);
+ADD CONSTRAINT FK_Cart_User_UserId
+FOREIGN KEY(user_id) REFERENCES [user](user_id);
+
+ALTER TABLE [cart]
+ADD CONSTRAINT FK_Cart_User_UserGuid
+FOREIGN KEY(user_guid) REFERENCES [user](user_guid);
 
 -- === Check constraints ===
 ALTER TABLE [cart]
@@ -1166,7 +1247,7 @@ BEGIN
     INSERT INTO data_audit(table_name, record_id, action_type, data)
     SELECT
         'cart',
-        CAST(i.cart_id AS NVARCHAR(100)),
+        CAST(i.cart_guid AS NVARCHAR(100)),
         'INSERT',
         (SELECT i.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM inserted i;
@@ -1182,7 +1263,7 @@ BEGIN
     INSERT INTO data_audit(table_name, record_id, action_type, data)
     SELECT
         'cart',
-        CAST(i.cart_id AS NVARCHAR(100)),
+        CAST(i.cart_guid AS NVARCHAR(100)),
         'UPDATE',
         (
             SELECT 
@@ -1193,10 +1274,6 @@ BEGIN
     FROM inserted i
     JOIN deleted d ON i.cart_id = d.cart_id;
 
-    UPDATE c
-    SET updated_at = GETDATE()
-    FROM cart c
-    JOIN inserted i ON c.cart_id = i.cart_id;
 END;
 GO
 
@@ -1209,7 +1286,7 @@ BEGIN
     INSERT INTO data_audit(table_name, record_id, action_type, data)
     SELECT
         'cart',
-        CAST(d.cart_id AS NVARCHAR(100)),
+        CAST(d.cart_guid AS NVARCHAR(100)),
         'DELETE',
         (SELECT d.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM deleted d;
@@ -1221,20 +1298,32 @@ GO
 -- 7 Review
 -- ======================
 CREATE TABLE [review](
-    review_id UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
-    account_id UNIQUEIDENTIFIER NOT NULL,       -- người viết review
-    target_id UNIQUEIDENTIFIER NOT NULL,        -- đối tượng được review (item, shop, …)
+    review_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    review_guid UNIQUEIDENTIFIER DEFAULT NEWID(),
+
     target_type NVARCHAR(50) NOT NULL,          -- 'item', 'shop', … để phân biệt loại target
     rating INT DEFAULT 5,                       -- điểm đánh giá 0-5
     content NVARCHAR(2000) NULL,                -- nội dung review
+
     created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME DEFAULT GETDATE()
+    updated_at DATETIME DEFAULT GETDATE(),
+
+    user_guid UNIQUEIDENTIFIER NOT NULL,       -- người viết review
+    user_id BIGINT NOT NULL,       
+    target_guid UNIQUEIDENTIFIER NOT NULL,        -- đối tượng được review (item, shop, …)
+    target_id BIGINT NOT NULL,
+
+    UNIQUE (review_guid)
 );
 
 -- === FK ===
 ALTER TABLE [review]
-ADD CONSTRAINT FK_Review_User
-FOREIGN KEY(account_id) REFERENCES [user](account_id);
+ADD CONSTRAINT FK_Review_User_UserId
+FOREIGN KEY(user_id) REFERENCES [user](user_id);
+
+ALTER TABLE [review]
+ADD CONSTRAINT FK_Review_User_UserGuid
+FOREIGN KEY(user_guid) REFERENCES [user](user_guid);
 
 -- === Check constraints ===
 ALTER TABLE [review]
@@ -1261,16 +1350,10 @@ BEGIN
     INSERT INTO data_audit(table_name, record_id, action_type, data)
     SELECT 
         'review',
-        CAST(i.review_id AS NVARCHAR(100)),
+        CAST(i.review_guid AS NVARCHAR(100)),
         'INSERT',
         (SELECT i.* FROM inserted i FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM inserted i;
-
-    -- Auto update updated_at
-    UPDATE r
-    SET updated_at = GETDATE()
-    FROM review r
-    JOIN inserted i ON r.review_id = i.review_id;
 END;
 GO
 
@@ -1284,7 +1367,7 @@ BEGIN
     INSERT INTO data_audit(table_name, record_id, action_type, data)
     SELECT 
         'review',
-        CAST(i.review_id AS NVARCHAR(100)),
+        CAST(i.review_guid AS NVARCHAR(100)),
         'UPDATE',
         (
             SELECT 
@@ -1295,11 +1378,6 @@ BEGIN
     FROM inserted i
     JOIN deleted d ON i.review_id = d.review_id;
 
-    -- Auto update updated_at
-    UPDATE r
-    SET updated_at = GETDATE()
-    FROM review r
-    JOIN inserted i ON r.review_id = i.review_id;
 END;
 GO
 
@@ -1313,13 +1391,224 @@ BEGIN
     INSERT INTO data_audit(table_name, record_id, action_type, data)
     SELECT 
         'review',
-        CAST(d.review_id AS NVARCHAR(100)),
+        CAST(d.review_guid AS NVARCHAR(100)),
         'DELETE',
         (SELECT d.* FROM deleted d FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
     FROM deleted d;
 END;
 GO
 
+-- ======================
+-- 8 File
+-- ======================
+CREATE TABLE [file](
+    file_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    file_guid UNIQUEIDENTIFIER DEFAULT NEWID(),
+
+    file_name NVARCHAR(200) NOT NULL,
+    file_type VARCHAR(30) NOT NULL,
+    file_url NVARCHAR(MAX) NOT NULL,
+
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME DEFAULT GETDATE(),
+
+    UNIQUE (file_guid)
+    
+);
+
+-- === Check constraints ===
+ALTER TABLE [file]
+ADD CONSTRAINT CK_File_URL
+CHECK (LEN(file_url) > 0);
+
+ALTER TABLE [file]
+ADD CONSTRAINT CK_File_Type
+CHECK (file_type IN ('video','image', 'music'));  -- bổ sung các loại target khác nếu cần
+
+ALTER TABLE [file]
+ADD CONSTRAINT CK_File_Date
+CHECK (created_at <= GETDATE() AND updated_at <= GETDATE());
+
+-- === Trigger ===
+GO
+-- Trigger INSERT
+CREATE TRIGGER TRG_File_Insert
+ON [file]
+AFTER INSERT
+AS
+BEGIN
+    -- Audit
+    INSERT INTO data_audit(table_name, record_id, action_type, data)
+    SELECT 
+        'file',
+        CAST(i.file_guid AS NVARCHAR(100)),
+        'INSERT',
+        (SELECT i.* FROM inserted i FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
+    FROM inserted i;
+END;
+GO
+
+-- Trigger UPDATE
+CREATE TRIGGER TRG_File_Update
+ON [file]
+AFTER UPDATE
+AS
+BEGIN
+    -- Audit
+    INSERT INTO data_audit(table_name, record_id, action_type, data)
+    SELECT 
+        'file',
+        CAST(i.file_guid AS NVARCHAR(100)),
+        'UPDATE',
+        (
+            SELECT 
+                (SELECT d.* FROM deleted d WHERE d.file_id = i.file_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS OldData,
+                (SELECT i2.* FROM inserted i2 WHERE i2.file_id = i.file_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS NewData
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        )
+    FROM inserted i
+    JOIN deleted d ON i.file_id = d.file_id;
+END;
+GO
+
+-- Trigger DELETE
+CREATE TRIGGER TRG_File_Delete
+ON [file]
+AFTER DELETE
+AS
+BEGIN
+    -- Audit
+    INSERT INTO data_audit(table_name, record_id, action_type, data)
+    SELECT 
+        'file',
+        CAST(d.file_guid AS NVARCHAR(100)),
+        'DELETE',
+        (SELECT d.* FROM deleted d FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
+    FROM deleted d;
+END;
+GO
+
+-- ======================
+-- 9 Film
+-- ======================
+CREATE TABLE [film](
+    film_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    film_guid UNIQUEIDENTIFIER DEFAULT NEWID(),
+
+    film_name NVARCHAR(200) NOT NULL,
+    film_description NVARCHAR(1000) NOT NULL,
+    film_cost DECIMAL(18,2) DEFAULT 0,
+
+    avg_rating DECIMAL(3,2) DEFAULT 0,
+    number_review INT DEFAULT 0,
+    number_view INT DEFAULT 0,
+
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME DEFAULT GETDATE(),
+
+    file_id BIGINT NOT NULL,
+    file_guid UNIQUEIDENTIFIER NOT NULL,
+    user_guid UNIQUEIDENTIFIER NOT NULL,
+    user_id BIGINT NOT NULL,
+
+);
+
+-- === FK ===
+ALTER TABLE [film]
+ADD CONSTRAINT FK_Film_User_UserId
+FOREIGN KEY(user_id) REFERENCES [user](user_id);
+
+ALTER TABLE [film]
+ADD CONSTRAINT FK_Film_User_UserGuid
+FOREIGN KEY(user_guid) REFERENCES [user](user_guid);
+
+ALTER TABLE [film]
+ADD CONSTRAINT FK_Film_File_FileId
+FOREIGN KEY(file_id) REFERENCES [file](file_id);
+
+ALTER TABLE [film]
+ADD CONSTRAINT FK_Film_File_FileGuid
+FOREIGN KEY(file_guid) REFERENCES [file](file_guid);
+
+-- === Check constraints ===
+ALTER TABLE [film]
+ADD CONSTRAINT CK_Film_Rating
+CHECK (    
+    avg_rating >= 0 AND
+    avg_rating <= 5
+);
+
+ALTER TABLE [film]
+ADD CONSTRAINT CK_Film_Positive
+CHECK (
+
+    number_view >= 0 AND
+    number_review >= 0
+); 
+
+ALTER TABLE [film]
+ADD CONSTRAINT CK_Film_Date
+CHECK (created_at <= GETDATE() AND updated_at <= GETDATE());
+
+-- === Trigger ===
+GO
+-- Trigger INSERT
+CREATE TRIGGER TRG_Film_Insert
+ON [film]
+AFTER INSERT
+AS
+BEGIN
+    -- Audit
+    INSERT INTO data_audit(table_name, record_id, action_type, data)
+    SELECT 
+        'film',
+        CAST(i.film_guid AS NVARCHAR(100)),
+        'INSERT',
+        (SELECT i.* FROM inserted i FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
+    FROM inserted i;
+
+END;
+GO
+
+-- Trigger UPDATE
+CREATE TRIGGER TRG_Film_Update
+ON [film]
+AFTER UPDATE
+AS
+BEGIN
+    -- Audit
+    INSERT INTO data_audit(table_name, record_id, action_type, data)
+    SELECT 
+        'film',
+        CAST(i.film_guid AS NVARCHAR(100)),
+        'UPDATE',
+        (
+            SELECT 
+                (SELECT d.* FROM deleted d WHERE d.film_id = i.film_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS OldData,
+                (SELECT i2.* FROM inserted i2 WHERE i2.film_id = i.film_id FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS NewData
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        )
+    FROM inserted i
+    JOIN deleted d ON i.film_id = d.film_id;
+END;
+GO
+
+-- Trigger DELETE
+CREATE TRIGGER TRG_Film_Delete
+ON [film]
+AFTER DELETE
+AS
+BEGIN
+    -- Audit
+    INSERT INTO data_audit(table_name, record_id, action_type, data)
+    SELECT 
+        'film',
+        CAST(d.film_guid AS NVARCHAR(100)),
+        'DELETE',
+        (SELECT d.* FROM deleted d FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
+    FROM deleted d;
+END;
+GO
 
 
 
