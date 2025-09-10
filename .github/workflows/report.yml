@@ -19,7 +19,7 @@ jobs:
 
           - name: Tính số điểm đóng góp bằng git
             run: |
-                echo "📊 **BÁO CÁO CI – $(TZ='Asia/Ho_Chi_Minh' date '+%Y-%m-%d %H:%M:%S')**" >> report.txt
+                echo "📊 **BÁO CÁO CI – $(TZ='Asia/Ho_Chi_Minh' date '+%Y-%m-%d %H:%M:%S') (UTC+07:00)**" >> report.txt
 
                 echo "" >> report.txt
                 echo "🧾 **Thông tin commit mới nhất:**" >> report.txt
