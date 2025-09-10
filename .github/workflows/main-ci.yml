@@ -71,7 +71,7 @@ jobs:
         run: |
           $vnTimeZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("SE Asia Standard Time")
           $vnTime = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $vnTimeZone)
-          $msg = "✅ Build main thành công lúc $($vnTime.ToString('yyyy-MM-dd HH:mm:ss')) (giờ VN)"
+          $msg = "✅ Build main thành công lúc $($vnTime.ToString('yyyy-MM-dd HH:mm:ss')) (UTC+07:00)"
           $payload = @{ content = $msg } | ConvertTo-Json -Compress
           Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK -Method Post -ContentType "application/json" -Body $payload
         env:
@@ -83,7 +83,7 @@ jobs:
         run: |
           $vnTimeZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("SE Asia Standard Time")
           $vnTime = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $vnTimeZone)
-          $msg = "❌ Build main thất bại lúc $($vnTime.ToString('yyyy-MM-dd HH:mm:ss')) (giờ VN)"
+          $msg = "❌ Build main thất bại lúc $($vnTime.ToString('yyyy-MM-dd HH:mm:ss')) (UTC+07:00)"
           $payload = @{ content = $msg } | ConvertTo-Json -Compress
           Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK -Method Post -ContentType "application/json" -Body $payload
         env:
