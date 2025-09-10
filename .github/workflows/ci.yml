@@ -3,8 +3,6 @@ name: Full CI Build & Notify
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
   # -----------------------------
