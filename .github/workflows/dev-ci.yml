@@ -3,7 +3,9 @@ name: Dev CI & Auto Merge
 on:
   push:
     branches: [dev]
-    
+  pull_request:
+    branches: [dev]
+
 jobs:
   ci:
     name: 🚀 Build & Test
@@ -17,6 +19,8 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Đảm bảo có đủ lịch sử để merge chính xác
 
       - name: Run Unit Tests
         if: hashFiles('./Test/Test.csproj') != ''
@@ -36,11 +40,14 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          git fetch origin main || git checkout -b main
+          # Lấy đầy đủ lịch sử và checkout main
+          git remote set-url origin https://$MY_PAT@github.com/thuangf45/CPSSFA.git
+          git fetch origin
           git checkout main
-          git pull origin main || echo "No remote main yet"
+          git pull origin main
 
-          git merge origin/dev --no-ff --allow-unrelated-histories -m "Auto merge dev into main after successful build"
+          # Merge dev vào main
+          git merge dev -m "✅ Auto merge dev into main after successful build"
 
-          # Push bằng PAT
-          git push https://$MY_PAT@github.com/thuangf45/CPSSFA.git main
+          # Push lên main
+          git push origin main
