@@ -50,12 +50,14 @@ GO
 -- READ
 -- ======================
 CREATE OR ALTER PROCEDURE Reaction_Read
+    @reactions dbo.[Reaction] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT *
-    FROM [reaction];
+    FROM [reaction] r
+    JOIN @reactions rx ON r.reaction_id = rx.ReactionId;
 END
 GO
 

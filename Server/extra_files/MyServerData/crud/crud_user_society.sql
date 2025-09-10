@@ -50,15 +50,16 @@ GO
 
 -- READ
 CREATE OR ALTER PROCEDURE UserSociety_Read
+    @userSocieties dbo.[UserSociety] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT *
-    FROM [user_society];
+    FROM [user_society] us
+    INNER JOIN @userSocieties u ON us.user_society_id = u.UserSocietyId;
 END
 GO
-
 
 -- UPDATE
 CREATE OR ALTER PROCEDURE UserSociety_Update

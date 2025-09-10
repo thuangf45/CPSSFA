@@ -62,12 +62,14 @@ GO
 -- READ
 -- ======================
 CREATE OR ALTER PROCEDURE Voucher_Read
+    @vouchers dbo.[Voucher] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT *
-    FROM [voucher];
+    FROM [voucher] v
+    JOIN @vouchers vc ON v.voucher_id = vc.VoucherId;
 END
 GO
 

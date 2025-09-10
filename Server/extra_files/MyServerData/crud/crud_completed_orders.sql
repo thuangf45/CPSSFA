@@ -46,12 +46,14 @@ GO
 -- READ
 -- ======================
 CREATE OR ALTER PROCEDURE CompletedOrders_Read
+    @completed_orders dbo.[CompletedOrders] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT *
-    FROM [completed_orders];
+    FROM [completed_orders] co
+    JOIN @completed_orders c ON co.completed_orders_id = c.CompletedOrdersId;
 END
 GO
 

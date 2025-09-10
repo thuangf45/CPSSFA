@@ -7,7 +7,7 @@ GO
 -- ======================
 CREATE TYPE [Account] AS TABLE
 (
-    AccountId BIGINT NULL,
+    AccountId BIGINT NOT NULL PRIMARY KEY,
     AccountGuid UNIQUEIDENTIFIER NULL,
     Role NVARCHAR(50) NULL,
     CreatedAt DATETIME NULL
@@ -18,10 +18,10 @@ CREATE TYPE [Account] AS TABLE
 -- ======================
 CREATE TYPE [AccountIdentity] AS TABLE
 (
-    IdentityId BIGINT NULL,  -- ID tự tăng
+    IdentityId BIGINT NOT NULL PRIMARY KEY,  -- ID tự tăng
     IdentityGuid UNIQUEIDENTIFIER NULL,
 
-    Provider NVARCHAR(50) NULL,        -- local, google, facebook, phone...
+    Provider NVARCHAR(50) NOT NULL,        -- local, google, facebook, phone...
     ProviderKey NVARCHAR(255) NULL,   -- email, OAuth sub_id, phone
     PasswordHash VARBINARY(256) NULL,     -- chỉ cho provider = local
     CreatedAt DATETIME NULL,
@@ -37,7 +37,7 @@ CREATE TYPE [AccountIdentity] AS TABLE
 -- ======================
 CREATE TYPE [User] AS TABLE 
 (
-    UserId BIGINT NULL,
+    UserId BIGINT NOT NULL PRIMARY KEY,
     UserGuid UNIQUEIDENTIFIER NULL,
 
     FullName NVARCHAR(200) NULL,
@@ -57,7 +57,7 @@ CREATE TYPE [User] AS TABLE
 -- ======================
 CREATE TYPE [UserBank] AS TABLE
 (
-    UserBankId BIGINT NULL,
+    UserBankId BIGINT NOT NULL PRIMARY KEY,
     AccountNumber NVARCHAR(100) NULL,
 
     AccountAmount BIGINT NULL,
@@ -73,7 +73,7 @@ CREATE TYPE [UserBank] AS TABLE
 -- ======================
 CREATE TYPE [UserSociety] AS TABLE
 (
-    UserSocietyId BIGINT NULL,
+    UserSocietyId BIGINT NOT NULL PRIMARY KEY,
     UserSocietyGuid UNIQUEIDENTIFIER NULL,
 
     ReputationScore INT NULL,
@@ -91,7 +91,7 @@ CREATE TYPE [UserSociety] AS TABLE
 -- ======================
 CREATE Type [Post] AS TABLE
 (
-    PostId BIGINT NULL,
+    PostId BIGINT NOT NULL PRIMARY KEY,
     PostGuid UNIQUEIDENTIFIER NULL,
 
     Content NVARCHAR(1000) NULL,
@@ -110,7 +110,7 @@ CREATE Type [Post] AS TABLE
 -- 5.2 Reaction
 -- ======================
 CREATE Type [Reaction] AS TABLE(
-    ReactionId BIGINT NULL,
+    ReactionId BIGINT NOT NULL PRIMARY KEY,
     ReactionGuid UNIQUEIDENTIFIER NULL,
 
     ReactionType NVARCHAR(20) NULL,
@@ -130,7 +130,7 @@ CREATE Type [Reaction] AS TABLE(
 -- ======================
 CREATE TYPE [Shop] AS TABLE
 (
-    ShopId BIGINT NULL,
+    ShopId BIGINT NOT NULL PRIMARY KEY,
     ShopGuid UNIQUEIDENTIFIER NULL,
 
     ShopName NVARCHAR(100) NULL,
@@ -159,7 +159,7 @@ CREATE TYPE [Shop] AS TABLE
 -- ======================
 CREATE TYPE [Order] AS TABLE
 (
-    OrderId BIGINT NULL,
+    OrderId BIGINT NOT NULL PRIMARY KEY,
     OrderGuid UNIQUEIDENTIFIER NULL,
 
     OrderName NVARCHAR(100) NULL,
@@ -194,7 +194,7 @@ CREATE TYPE [Order] AS TABLE
 -- ======================
 CREATE TYPE [Voucher] AS TABLE 
 (
-    VoucherId BIGINT NULL,
+    VoucherId BIGINT NOT NULL PRIMARY KEY,
     VoucherGuid UNIQUEIDENTIFIER NULL,
 
     Code NVARCHAR(50) NULL,        -- mã voucher duy nhất
@@ -221,7 +221,7 @@ CREATE TYPE [Voucher] AS TABLE
 -- ======================
 CREATE TYPE [Item] AS TABLE
 (
-    ItemId BIGINT NULL,
+    ItemId BIGINT NOT NULL PRIMARY KEY,
     ItemGuid UNIQUEIDENTIFIER NULL,
 
     ItemName NVARCHAR(200) NULL,
@@ -245,7 +245,7 @@ CREATE TYPE [Item] AS TABLE
 -- ======================
 CREATE TYPE [CompletedOrders] AS TABLE
 (
-    CompletedOrdersId BIGINT NULL,
+    CompletedOrdersId BIGINT NOT NULL PRIMARY KEY,
     CompletedOrdersGuid UNIQUEIDENTIFIER NULL,
 
     OrdersDetails NVARCHAR(MAX) NULL,        -- JSON mảng các order
@@ -263,7 +263,7 @@ CREATE TYPE [CompletedOrders] AS TABLE
 -- ======================
 CREATE TYPE [Cart] AS TABLE
 (
-    CartId BIGINT NULL,
+    CartId BIGINT NOT NULL PRIMARY KEY,
     CartGuid UNIQUEIDENTIFIER NULL,
 
     CartDetails NVARCHAR(MAX) NULL,   -- JSON mảng các item: item_id, quantity, price
@@ -281,7 +281,7 @@ CREATE TYPE [Cart] AS TABLE
 -- ======================
 CREATE TYPE [Review] AS TABLE
 (
-    ReviewId BIGINT NULL,
+    ReviewId BIGINT NOT NULL PRIMARY KEY,
     ReviewGuid UNIQUEIDENTIFIER NULL,
 
     TargetType NVARCHAR(50) NULL,          -- 'item', 'shop', … để phân biệt loại target
@@ -303,7 +303,7 @@ CREATE TYPE [Review] AS TABLE
 -- ======================
 CREATE TYPE [File] AS TABLE
 (
-    FileID BIGINT NULL,
+    FileId BIGINT NOT NULL PRIMARY KEY,
     FileGuid UNIQUEIDENTIFIER NULL,
 
     FileName NVARCHAR(200) NULL,
@@ -319,7 +319,7 @@ CREATE TYPE [File] AS TABLE
 -- 9 Film
 -- ======================
 CREATE TYPE [Film] AS TABLE(
-    FilmId BIGINT NULL,
+    FilmId BIGINT NOT NULL PRIMARY KEY,
     FilmGuid UNIQUEIDENTIFIER NULL,
 
     FilName NVARCHAR(200) NULL,

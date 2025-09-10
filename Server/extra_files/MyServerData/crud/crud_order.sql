@@ -72,12 +72,14 @@ GO
 -- READ
 -- ======================
 CREATE OR ALTER PROCEDURE Order_Read
+    @orders dbo.[Order] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT *
-    FROM [order];
+    FROM [order] o
+    JOIN @orders orw ON o.order_id = orw.OrderId;
 END
 GO
 

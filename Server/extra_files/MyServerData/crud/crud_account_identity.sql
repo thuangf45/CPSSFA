@@ -53,12 +53,14 @@ GO
 -- READ
 -- ======================
 CREATE OR ALTER PROCEDURE AccountIdentity_Read
+    @account_identities dbo.[AccountIdentity] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT *
-    FROM [account_identity] ai;
+    FROM [account_identity] ai
+    JOIN @account_identities ais ON ais.IdentityId = ai.identity_id;
 END
 GO
 
@@ -67,7 +69,7 @@ GO
 -- UPDATE
 -- ======================
 CREATE OR ALTER PROCEDURE AccountIdentity_Update
-    @account_identites dbo.[AccountIdentity] READONLY
+    @account_identities dbo.[AccountIdentity] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -87,7 +89,7 @@ BEGIN
             ai.account_id    = COALESCE(ais.AccountId, ai.account_id), 
             ai.account_guid  = COALESCE(ais.AccountGuid, ai.account_guid)
         FROM [account_identity] ai
-        JOIN @account_identites ais ON ai.identity_id = ais.IdentityId;
+        JOIN @account_identities ais ON ai.identity_id = ais.IdentityId;
 
 
         COMMIT TRANSACTION;
@@ -105,7 +107,7 @@ GO
 -- DELETE
 -- ======================
 CREATE OR ALTER PROCEDURE AccountIdentity_Delete
-    @account_identites dbo.[AccountIdentity] READONLY
+    @account_identities dbo.[AccountIdentity] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -115,7 +117,7 @@ BEGIN
 
         DELETE ai
         FROM [account_identity] ai
-        JOIN @account_identites ais ON ai.identity_id = ais.IdentityId;
+        JOIN @account_identities ais ON ai.identity_id = ais.IdentityId;
 
         COMMIT TRANSACTION;
         SELECT @@ROWCOUNT AS Result;

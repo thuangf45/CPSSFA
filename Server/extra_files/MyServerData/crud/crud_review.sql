@@ -53,12 +53,14 @@ GO
 -- READ
 -- ======================
 CREATE OR ALTER PROCEDURE Review_Read
+    @reviews dbo.[Review] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT *
-    FROM [review];
+    FROM [review] r
+    JOIN @reviews rv ON r.review_id = rv.ReviewId;
 END
 GO
 

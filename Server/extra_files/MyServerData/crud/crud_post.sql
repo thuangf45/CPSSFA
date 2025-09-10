@@ -54,12 +54,14 @@ GO
 -- READ
 -- ======================
 CREATE OR ALTER PROCEDURE Post_Read
+    @posts dbo.[Post] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT *
-    FROM [post];
+    FROM [post] p
+    JOIN @posts po ON p.post_id = po.PostId;
 END
 GO
 

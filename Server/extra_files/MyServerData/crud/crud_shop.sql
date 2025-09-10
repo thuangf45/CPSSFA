@@ -66,12 +66,14 @@ GO
 -- READ
 -- ======================
 CREATE OR ALTER PROCEDURE Shop_Read
+    @shops dbo.[Shop] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT *
-    FROM [shop];
+    FROM [shop] s
+    JOIN @shops sh ON s.shop_id = sh.ShopId;
 END
 GO
 

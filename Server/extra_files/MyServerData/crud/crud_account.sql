@@ -41,15 +41,16 @@ GO
 -- READ
 -- ======================
 CREATE OR ALTER PROCEDURE Account_Read
+    @accounts dbo.[Account] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT *
-    FROM [account] a;
+    FROM [account] a
+    JOIN @accounts acc ON acc.AccountId = a.account_id
 END
 GO
-
 
 -- ======================
 -- UPDATE

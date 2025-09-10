@@ -58,12 +58,14 @@ GO
 -- READ
 -- ======================
 CREATE OR ALTER PROCEDURE Item_Read
+    @items dbo.[Item] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT *
-    FROM [item];
+    FROM [item] i
+    JOIN @items it ON i.item_id = it.ItemId;
 END
 GO
 

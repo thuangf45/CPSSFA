@@ -60,12 +60,14 @@ GO
 -- READ
 -- ======================
 CREATE OR ALTER PROCEDURE Film_Read
+    @films dbo.[Film] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT *
-    FROM [film];
+    FROM [film] f
+    JOIN @films fl ON f.film_id = fl.FilmId;
 END
 GO
 

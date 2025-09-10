@@ -46,10 +46,13 @@ GO
 
 -- READ (lấy toàn bộ dữ liệu)
 CREATE OR ALTER PROCEDURE UserBank_Read
+    @userBanks dbo.[UserBank] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT * FROM [user_bank];
+    SELECT * 
+    FROM [user_bank] ub
+    INNER JOIN @userBanks u ON ub.user_bank_id = u.UserBankId;
 END
 GO
 

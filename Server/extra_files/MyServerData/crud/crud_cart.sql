@@ -46,12 +46,14 @@ GO
 -- READ
 -- ======================
 CREATE OR ALTER PROCEDURE Cart_Read
+    @carts dbo.[Cart] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT *
-    FROM [cart];
+    FROM [cart] c
+    JOIN @carts ct ON ct.CartId = c.cart_id;
 END
 GO
 

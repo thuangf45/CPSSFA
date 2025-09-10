@@ -54,12 +54,14 @@ GO
 -- READ
 -- ======================
 CREATE OR ALTER PROCEDURE User_Read
+    @users dbo.[User] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT *
-    FROM [user] u;
+    FROM [user] u
+    JOIN @users us ON u.user_id = us.UserId;
 END
 GO
 

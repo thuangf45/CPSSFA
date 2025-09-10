@@ -46,12 +46,14 @@ GO
 -- READ
 -- ======================
 CREATE OR ALTER PROCEDURE File_Read
+    @files dbo.[File] READONLY
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT *
-    FROM [file];
+    FROM [file] f
+    JOIN @files fl ON f.file_id = fl.FileId;
 END
 GO
 
@@ -77,7 +79,7 @@ BEGIN
             f.created_at = COALESCE(fl.CreatedAt, f.created_at),
             f.updated_at = COALESCE(fl.UpdatedAt, f.updated_at)
         FROM [file] f
-        JOIN @files fl ON f.file_id = fl.FileID;
+        JOIN @files fl ON f.file_id = fl.FileId;
 
         COMMIT TRANSACTION;
         SELECT @@ROWCOUNT AS Result;
@@ -88,7 +90,6 @@ BEGIN
     END CATCH;
 END
 GO
-
 
 -- ======================
 -- DELETE
@@ -104,7 +105,7 @@ BEGIN
 
         DELETE f
         FROM [file] f
-        JOIN @files fl ON f.file_id = fl.FileID;
+        JOIN @files fl ON f.file_id = fl.FileId;
 
         COMMIT TRANSACTION;
         SELECT @@ROWCOUNT AS Result;
