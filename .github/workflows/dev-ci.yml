@@ -51,3 +51,13 @@ jobs:
 
           # Push lên main
           git push origin main
+
+      # --- Bước mới để kích hoạt workflow `main` ---
+      - name: Trigger Main Build Workflow
+        if: success()
+        run: |
+          curl -X POST \
+          -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/thuangf45/CPSSFA/actions/workflows/main_ci_build.yml/dispatches \
+          -d '{"ref":"main"}'
