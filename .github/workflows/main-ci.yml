@@ -62,21 +62,25 @@ jobs:
           path: BuildOutput
           if-no-files-found: error
           retention-days: 7
-
+          
       # -----------------------------
       # 🔔 Thông báo build kết quả
       - name: Gửi thông báo build thành công
         if: success()
+        shell: pwsh
         run: |
-          payload=$(jq -Rn --arg msg "✅ Build main thành công lúc $(date '+%Y-%m-%d %H:%M:%S')" '{content: $msg}')
-          curl -H "Content-Type: application/json" -X POST -d "$payload" "$DISCORD_WEBHOOK"
+          $msg = "✅ Build main thành công lúc $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+          $payload = @{ content = $msg } | ConvertTo-Json -Compress
+          Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK -Method Post -ContentType "application/json" -Body $payload
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
 
       - name: Gửi thông báo build thất bại
         if: failure()
+        shell: pwsh
         run: |
-          payload=$(jq -Rn --arg msg "❌ Build main thất bại lúc $(date '+%Y-%m-%d %H:%M:%S')" '{content: $msg}')
-          curl -H "Content-Type: application/json" -X POST -d "$payload" "$DISCORD_WEBHOOK"
+          $msg = "❌ Build main thất bại lúc $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+          $payload = @{ content = $msg } | ConvertTo-Json -Compress
+          Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK -Method Post -ContentType "application/json" -Body $payload
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
