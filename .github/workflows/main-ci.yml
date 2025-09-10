@@ -1,0 +1,80 @@
+name: Full CI Build
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  # -----------------------------
+  build:
+    name: 🚀 Build App
+    runs-on: windows-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+        with:
+            fetch-depth: 0 # Lấy toàn bộ history cho git blame
+
+      - name: Restore dependencies
+        run: dotnet restore ./Server/Server.csproj
+
+      - name: Build Console vào thư mục BuildOutput
+        run: dotnet publish ./Server/Server.csproj -c Release -o ./BuildOutput --self-contained false -r win-x64
+
+      - name: Copy FE vào BuildOutput
+        shell: pwsh
+        run: |
+          $feSource = "${{ github.workspace }}/fe"
+          $beDestination = "${{ github.workspace }}/BuildOutput/fe"
+          if (Test-Path $feSource) {
+              if (Test-Path $beDestination) { Remove-Item $beDestination -Recurse -Force }
+              Copy-Item $feSource $beDestination -Recurse
+              Write-Host "✅ Đã copy FE vào BuildOutput của BE."
+          } else {
+              Write-Host "ℹ️ Thư mục FE không tồn tại, bỏ qua."
+          }
+
+      - name: Copy DB vào BuildOutput
+        shell: pwsh
+        run: |
+          $dbSource = "${{ github.workspace }}/db"
+          $beDestination = "${{ github.workspace }}/BuildOutput/db"
+          if (Test-Path $dbSource) {
+              if (Test-Path $beDestination) { Remove-Item $beDestination -Recurse -Force }
+              Copy-Item $dbSource $beDestination -Recurse
+              Write-Host "✅ Đã copy DB vào BuildOutput của BE."
+          } else {
+              Write-Host "ℹ️ Thư mục DB không tồn tại, bỏ qua."
+          }
+
+      - name: Upload thư mục BuildOutput (GitHub tự zip khi tải về)
+        uses: actions/upload-artifact@v4
+        with:
+          name: My App
+          path: BuildOutput
+          if-no-files-found: error
+          retention-days: 7
+
+      # -----------------------------
+      # 🔔 Thông báo build kết quả
+      - name: Gửi thông báo build thành công
+        if: success()
+        run: |
+          payload=$(jq -Rn --arg msg "✅ Build main thành công lúc $(date '+%Y-%m-%d %H:%M:%S')" '{content: $msg}')
+          curl -H "Content-Type: application/json" -X POST -d "$payload" "$DISCORD_WEBHOOK"
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Gửi thông báo build thất bại
+        if: failure()
+        run: |
+          payload=$(jq -Rn --arg msg "❌ Build main thất bại lúc $(date '+%Y-%m-%d %H:%M:%S')" '{content: $msg}')
+          curl -H "Content-Type: application/json" -X POST -d "$payload" "$DISCORD_WEBHOOK"
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}

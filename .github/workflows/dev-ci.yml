@@ -1,14 +1,12 @@
-name: BE CI & Auto Merge
+name: Dev CI & Auto Merge
 
 on:
   push:
-    branches: [BE]
-  pull_request:
-    branches: [BE]
+    branches: [dev]
 
 jobs:
-  build:
-    name: 🚀 Build App
+  ci:
+    name: 🚀 Build & Test
     runs-on: windows-latest
 
     permissions:
@@ -19,26 +17,30 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Build Console App vào thư mục BuildOutput
+      - name: Run Unit Tests
+        if: hashFiles('./Test/Test.csproj') != ''
+        run: |
+          dotnet restore ./Test/Test.csproj
+          dotnet test ./Test/Test.csproj --verbosity normal
+
+      - name: Publish App
+        if: success()
         run: dotnet publish ./Server/Server.csproj -c Release -o ./BuildOutput --self-contained false -r win-x64
 
-      # Merge vào main nếu test pass
-      - name: Auto merge BE into main
+      - name: Auto merge dev into main
         if: success()
         env:
-          MY_PAT: ${{ secrets.PAT_TOKEN  }}
+          MY_PAT: ${{ secrets.PAT_TOKEN }}
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          git fetch origin main || git checkout -b main
-          git checkout main
+          git fetch origin
+          git checkout main || git checkout -b main origin/main
           git pull origin main || echo "No remote main yet"
 
-          git merge origin/be --no-ff --allow-unrelated-histories -m "Auto merge BE into main after successful build"
-
-          # Push bằng PAT
+          git merge origin/dev --no-ff -m "Auto merge dev into main after successful test & build"
           git push https://$MY_PAT@github.com/thuangf45/CPSSFA.git main
-
-
