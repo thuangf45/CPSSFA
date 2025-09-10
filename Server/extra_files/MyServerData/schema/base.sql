@@ -1,7 +1,5 @@
-﻿CREATE DATABASE base;
-GO
-
-USE base;
+﻿-- Switch to the database
+USE [$(DatabaseName)];
 GO
 
 CREATE TABLE [data_audit] (
@@ -18,7 +16,7 @@ CREATE TABLE [data_audit] (
 );
 
 -- ======================
--- 1️ Thực thể gốc: Account
+-- 1️ Account
 -- ======================
 CREATE TABLE [account] (
     account_id BIGINT IDENTITY(1,1) PRIMARY KEY,  -- ID tự tăng
@@ -1510,6 +1508,8 @@ CREATE TABLE [film](
     file_guid UNIQUEIDENTIFIER NOT NULL,
     user_guid UNIQUEIDENTIFIER NOT NULL,
     user_id BIGINT NOT NULL,
+
+    UNIQUE (film_guid)
 
 );
 
