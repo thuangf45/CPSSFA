@@ -3,6 +3,8 @@ name: Dev CI & Auto Merge
 on:
   push:
     branches: [dev]
+  pull_request:
+    branches: [dev]
 
 jobs:
   ci:
