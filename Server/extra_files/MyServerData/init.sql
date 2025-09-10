@@ -22,7 +22,7 @@ GO
 :r crud/crud_account.sql
 :r crud/crud_account_identity.sql
 :r crud/crud_cart.sql
-:r crud/crud_completed_order.sql
+:r crud/crud_completed_orders.sql
 :r crud/crud_file.sql
 :r crud/crud_film.sql
 :r crud/crud_item.sql
