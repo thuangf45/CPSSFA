@@ -69,7 +69,9 @@ jobs:
         if: success()
         shell: pwsh
         run: |
-          $msg = "✅ Build main thành công lúc $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+          $vnTimeZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("SE Asia Standard Time")
+          $vnTime = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $vnTimeZone)
+          $msg = "✅ Build main thành công lúc $($vnTime.ToString('yyyy-MM-dd HH:mm:ss')) (giờ VN)"
           $payload = @{ content = $msg } | ConvertTo-Json -Compress
           Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK -Method Post -ContentType "application/json" -Body $payload
         env:
@@ -79,8 +81,11 @@ jobs:
         if: failure()
         shell: pwsh
         run: |
-          $msg = "❌ Build main thất bại lúc $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+          $vnTimeZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("SE Asia Standard Time")
+          $vnTime = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $vnTimeZone)
+          $msg = "❌ Build main thất bại lúc $($vnTime.ToString('yyyy-MM-dd HH:mm:ss')) (giờ VN)"
           $payload = @{ content = $msg } | ConvertTo-Json -Compress
           Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK -Method Post -ContentType "application/json" -Body $payload
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+
