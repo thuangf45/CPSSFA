@@ -49,5 +49,5 @@ jobs:
           # Merge dev vào main
           git merge dev --no-ff -m "✅ Auto merge dev into main after successful build"
 
-          # Push bằng PAT
-          git push https://$MY_PAT@github.com/thuangf45/CPSSFA.git main
+          # Push lên main
+          git push origin main
