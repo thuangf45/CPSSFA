@@ -1,0 +1,83 @@
+name: Report
+
+on:
+  push:
+    branches-ignore:
+    - main        # ❌ bỏ qua main
+
+jobs:
+    report:
+        runs-on: ubuntu-latest      
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v3
+            with:
+                fetch-depth: 0 # Lấy toàn bộ history cho git blame
+
+          - name: Cài jq (nếu chưa có)
+            run: sudo apt-get update && sudo apt-get install -y jq
+
+          - name: Tính số điểm đóng góp bằng git
+            run: |
+                echo "📊 **BÁO CÁO CI – $(TZ='Asia/Ho_Chi_Minh' date '+%Y-%m-%d %H:%M:%S') (UTC+07:00)**" >> report.txt
+
+                echo "" >> report.txt
+                echo "🧾 **Thông tin commit mới nhất:**" >> report.txt
+                echo "- Commit bởi: $(git log -1 --pretty=format:'%an')" >> report.txt
+                echo "- Message: \"$(git log -1 --pretty=format:'%s')\"" >> report.txt
+                echo "- File thay đổi trong commit mới nhất:" >> report.txt
+                git diff-tree --no-commit-id --name-only -r HEAD | sed 's/^/  - /' >> report.txt
+                
+                echo "" >> report.txt
+                echo "🧾 **Báo cáo số commit đóng góp**:" >> report.txt
+
+                # Đếm commit từng tác giả
+                git shortlog -s -n --all > commit.txt
+                while read count author_raw; do
+                    author=$(echo "$author_raw" | sed 's/^ *//; s/["'\'']//g')
+                    echo "- author $author: $count commit" >> report.txt
+                done < commit.txt
+
+                # Tổng số commit toàn repo
+                total_commits=$(git rev-list --count HEAD)
+                echo "- Tổng số commit toàn repo: \`$total_commits\`" >> report.txt
+                
+                echo "" >> report.txt
+                echo "🧾 **Báo cáo số dòng đóng góp**:" >> report.txt
+
+                # Xóa file tạm nếu có
+                rm -f authors.txt authors_count.txt
+
+                # Lấy tất cả file do git quản lý (không giới hạn đuôi)
+                git ls-files | while read file; do
+                    git blame --line-porcelain "$file" | grep "^author " >> authors.txt || true
+                done
+
+                # Đếm và lọc tác giả
+                sort authors.txt | uniq -c | sort -nr > authors_count.txt
+
+                # Format kết quả
+                while read count author_raw; do
+                    author=$(echo "$author_raw" | sed 's/^ *//; s/["'\'']//g')
+                    echo "- $author: \`$count dòng\`" >> report.txt
+                done < authors_count.txt
+
+                # ✅ Tính tổng số dòng
+                total_lines=$(awk '{sum += $1} END {print sum}' authors_count.txt)
+                echo "- Tổng số dòng được thống kê: \`$total_lines\`" >> report.txt
+                echo "- Tổng số file được thống kê: \`$(git ls-files | wc -l)\`" >> report.txt
+
+                echo "" >> report.txt
+                cat report.txt
+
+          - name: Gửi báo cáo đến Discord
+            run: |
+                message=$(cat report.txt)
+                payload=$(jq -Rn --arg msg "$message" '{content: $msg}')
+
+                curl -H "Content-Type: application/json" \
+                    -X POST \
+                    -d "$payload" \
+                    "$DISCORD_WEBHOOK"
+            env:
+                DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
