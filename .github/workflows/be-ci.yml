@@ -1,8 +1,8 @@
-name: BE CI & Auto Merge
+name: Dev CI & Auto Merge
 
 on:
   push:
-    branches: [BE]
+    branches: [dev]
 
 jobs:
   build:
