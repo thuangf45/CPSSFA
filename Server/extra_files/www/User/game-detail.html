@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Kontroller</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/custom.css">
+    <style>
+        .rating-curve {
+            background: linear-gradient(90deg, #10b981 80%, #fbbf24 15%, #ef4444 5%);
+            height: 8px;
+            border-radius: 4px;
+        }
+
+        .review-content:hover {
+            background-color: #04785780;
+            /* Darker muted teal with 50% opacity */
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Back Button Bar -->
+    <div class="bg-gray-800 border-b border-gray-700 py-2 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <button onclick="window.location.href='home.html'"
+                class="flex items-center space-x-2 text-gray-400 hover:text-white">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Write Review Modal -->
+    <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden"
+        style="align-items: center;">
+        <div class="bg-gray-900 text-white rounded-lg shadow-xl w-full max-w-xl p-6 relative space-y-6 mt-16">
+
+            <!-- Top bar -->
+            <div class="flex justify-between text-blue-400 font-semibold text-lg">
+                <button onclick="closeReviewModal()">Cancel</button>
+                <button id="Savebtn">Save</button>
+            </div>
+
+            <!-- Game Title, Poster, and Date -->
+            <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                    <span id="dateLabel" class="text-sm text-gray-400">Date Create</span>
+                    <p class="text-sm text-gray-400" id="reviewDate"></p>
+                </div>
+            </div>
+
+            <!-- Rating with 10 stars -->
+            <div class="text-center space-x-2">
+                <div id="rateLabel" class="text-sm text-gray-400 font-semibold">Rate</div>
+                <div class="flex justify-center gap-1">
+                    <span class="star text-2xl text-gray-500 cursor-pointer" data-value="1">★</span>
+                    <span class="star text-2xl text-gray-500 cursor-pointer" data-value="2">★</span>
+                    <span class="star text-2xl text-gray-500 cursor-pointer" data-value="3">★</span>
+                    <span class="star text-2xl text-gray-500 cursor-pointer" data-value="4">★</span>
+                    <span class="star text-2xl text-gray-500 cursor-pointer" data-value="5">★</span>
+                    <span class="star text-2xl text-gray-500 cursor-pointer" data-value="6">★</span>
+                    <span class="star text-2xl text-gray-500 cursor-pointer" data-value="7">★</span>
+                    <span class="star text-2xl text-gray-500 cursor-pointer" data-value="8">★</span>
+                    <span class="star text-2xl text-gray-500 cursor-pointer" data-value="9">★</span>
+                    <span class="star text-2xl text-gray-500 cursor-pointer" data-value="10">★</span>
+                </div>
+            </div>
+
+            <!-- Textarea -->
+            <div>
+                <textarea id="contentReview" rows="8" placeholder="Write your review..."
+                    class="w-full bg-gray-800 text-white p-4 rounded-lg focus:outline-none resize-none"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reaction Popup -->
+    <div id="reactionPopup" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-900 text-white rounded-lg shadow-xl w-full max-w-md p-6 relative space-y-6">
+            <!-- Top bar -->
+            <div class="flex justify-between text-blue-400 font-semibold text-lg">
+                <h2 id="reactionTitle" class="text-xl font-bold">People who reacted</h2>
+                <button onclick="closeReactionPopup()">Close</button>
+            </div>
+            <!-- List of people -->
+            <div class="space-y-4 max-h-80 overflow-y-auto" id="reactionList"></div>
+        </div>
+    </div>
+
+    <!-- Backdrop Image -->
+    <div class="relative h-96 bg-cover bg-center" id="gameDetail"
+        style="background-image: url('https://via.placeholder.com')">
+        <div class="backdrop-overlay absolute inset-0"></div>
+
+        <!-- Game Card -->
+        <div class="absolute bottom-6 left-6 flex items-end space-x-6 z-10 game-card-container">
+            <!-- Poster -->
+            <div class="flex-shrink-0">
+                <img src="https://via.placeholder.com" alt="Loading..." class="w-48 h-72 rounded-lg shadow-2xl">
+            </div>
+
+            <!-- Game Info -->
+            <div class="pb-4 game-info">
+                <h1 class="text-4xl font-bold mb-2">Loading...</h1>
+                <div class="flex items-center space-x-6 mb-4 rating-container">
+                    <!-- Rating -->
+                    <div class="flex items-center space-x-3">
+                        <span class="text-3xl font-bold text-green-400">Loading...</span>
+                    </div>
+
+                    <!-- Action Button -->
+                    <div class="relative action-container">
+                        <button id="actionBtn" onclick="openReviewModal()"
+                            class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors">
+                            Write Review
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Section -->
+    <div class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-6">
+            <nav class="flex space-x-8 overflow-x-auto">
+                <button id="tabReviews"
+                    class="tab-btn active py-4 px-2 border-b-2 border-blue-500 text-blue-400 font-medium"
+                    data-tab="reviews">
+                    Reviews
+                </button>
+                <button id="tabDetails"
+                    class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-300 hover:text-white font-medium"
+                    data-tab="details">
+                    Details
+                </button>
+                <button id="tabGenres"
+                    class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-300 hover:text-white font-medium"
+                    data-tab="genres">
+                    Genres
+                </button>
+                <button id="tabServices"
+                    class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-300 hover:text-white font-medium"
+                    data-tab="services">
+                    Services
+                </button>
+            </nav>
+
+        </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Reviews Tab -->
+        <div id="reviews" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6">Reviews</h2>
+            <div class="space-y-6" id="review-list">
+                <!-- Review Item -->
+                <div class="bg-gray-800 rounded-lg p-6 review-content" data-href="game-review.html">
+                    <div class="flex items-start space-x-4">
+                        <img src="https://via.placeholder.com" alt="Reviewer" class="w-12 h-12 rounded-full">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <h3 class="font-semibold">Loading....</h3>
+                                <span class="text-green-400 text-2xl">Loading....</span>
+                                <span class="text-sm text-gray-400">Loading....</span>
+                            </div>
+                            <p class="text-gray-300 mb-3">
+                                Loading.....
+                            </p>
+                            <div class="flex items-center space-x-4">
+                                <button id="reactionBtn" onclick="event.preventDefault(); GameUI.openReactionPopup(1)"
+                                    class="flex items-center space-x-2 text-gray-400 hover:text-blue-400">
+                                    <i class="fas fa-thumbs-up"></i>
+                                    <span>Loading....</span>
+                                </button>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Tab -->
+        <div id="details" class="tab-content hidden">
+            <h2 class="text-2xl font-bold mb-6">Details</h2>
+            <div class="bg-gray-800 rounded-lg p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="md:col-span-2">
+                        <h3 class="font-semibold text-gray-400 mb-2">Languages</h3>
+                        <p class="text-white">English, Japanese, Korean, Chinese, French, Italian, German, Spanish,
+                            Portuguese, Russian</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <h3 class="font-semibold text-gray-400 mb-2">Description</h3>
+                        <p class="text-white">Elden Ring is an action RPG which takes place in the Lands Between,
+                            sometime after the Shattering of the titular Elden Ring. Players must explore and fight
+                            their way through the vast open-world to unite all the shards, restore the Elden Ring,
+                            and become the Elden Lord.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Genres Tab -->
+        <div id="genres" class="tab-content hidden">
+            <h2 class="text-2xl font-bold mb-6">Genres</h2>
+            <div class="bg-gray-800 rounded-lg p-6">
+                <div class="flex flex-wrap gap-3">
+                    <span class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium">Action
+                        RPG</span>
+                    <span class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium">Open
+                        World</span>
+                    <span class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium">Dark
+                        Fantasy</span>
+                    <span class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium">Souls-like</span>
+                    <span class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium">Third-Person</span>
+                    <span class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium">Challenging</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Services Tab -->
+        <div id="services" class="tab-content hidden">
+            <h2 class="text-2xl font-bold mb-6">Available On</h2>
+            <div class="bg-gray-800 rounded-lg p-6" id="services">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="flex items-center space-x-3 p-3 bg-gray-700 rounded-lg">
+                        <i class="fab fa-steam text-2xl text-blue-400"></i>
+                        <div>
+                            <h3 class="font-semibold">Steam</h3>
+                            <p class="text-sm text-gray-400">PC</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 p-3 bg-gray-700 rounded-lg">
+                        <i class="fab fa-playstation text-2xl text-blue-600"></i>
+                        <div>
+                            <h3 class="font-semibold">PlayStation</h3>
+                            <p class="text-sm text-gray-400">PS4, PS5</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 p-3 bg-gray-700 rounded-lg">
+                        <i class="fab fa-xbox text-2xl text-green-500"></i>
+                        <div>
+                            <h3 class="font-semibold">Xbox</h3>
+                            <p class="text-sm text-gray-400">Xbox One, Series X/S</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </main>
+
+    <script>
+        // Action button popup
+        const actionBtn = document.getElementById('actionBtn');
+
+        actionBtn.addEventListener('click', () => {
+            openReviewModal();
+        });
+
+        // Open Review Modal
+        function openReviewModal() {
+            document.getElementById('reviewModal').classList.remove('hidden');
+            document.getElementById('reviewDate').textContent = new Date().toLocaleDateString('en-US', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+        }
+
+        // Close Review Modal
+        function closeReviewModal() {
+            document.getElementById('reviewModal').classList.add('hidden');
+        }
+
+        // Rating logic with 10 stars for Review Modal
+        let reviewRating = 0;
+        const reviewStars = document.querySelectorAll('.star');
+        const rateLabel = document.getElementById('rateLabel');
+        reviewStars.forEach((star) => {
+            star.addEventListener('click', () => {
+                const value = parseInt(star.getAttribute('data-value'));
+                if (reviewRating === value) {
+                    reviewRating = 0;
+                    rateLabel.textContent = "Rate";
+                } else {
+                    reviewRating = value;
+                    rateLabel.textContent = "Rated";
+                }
+                updateReviewStars();
+            });
+        });
+
+        function updateReviewStars() {
+            reviewStars.forEach((s) => {
+                const value = parseInt(s.getAttribute('data-value'));
+                if (value <= reviewRating) {
+                    s.classList.remove('text-gray-500');
+                    s.classList.add('text-green-500');
+                } else {
+                    s.classList.remove('text-green-500');
+                    s.classList.add('text-gray-500');
+                }
+            });
+        }
+
+        // Date label click to turn red for Review Modal
+        const dateLabel = document.getElementById('dateLabel');
+        dateLabel.addEventListener('click', () => {
+            dateLabel.classList.toggle('text-red-400');
+            dateLabel.classList.toggle('text-gray-400');
+        });
+
+        // Tab functionality
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetTab = btn.getAttribute('data-tab');
+
+                // Remove active class from all buttons
+                tabBtns.forEach(b => {
+                    b.classList.remove('active', 'border-blue-500', 'text-blue-400');
+                    b.classList.add('border-transparent', 'text-gray-300');
+                });
+
+                // Add active class to clicked button
+                btn.classList.add('active', 'border-blue-500', 'text-blue-400');
+                btn.classList.remove('border-transparent', 'text-gray-300');
+
+                // Hide all tab contents
+                tabContents.forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                // Show target tab content
+                document.getElementById(targetTab).classList.remove('hidden');
+            });
+        });
+
+        // Reaction Popup
+        function openReactionPopup(type, count) {
+            event.preventDefault(); // Prevent default link behavior
+            const reactionList = document.getElementById('reactionList');
+            reactionList.innerHTML = ''; // Clear previous content
+            document.getElementById('reactionTitle').textContent = type.charAt(0).toUpperCase() + type.slice(1) + ' Reactions (' + count + ')';
+
+            // Sample data for reaction popup (replace with actual data if available)
+            const reactions = {
+                like: [
+                    { name: 'John Doe', avatar: 'https://via.placeholder.com/40x40' },
+                    { name: 'Sarah Wilson', avatar: 'https://via.placeholder.com/40x40' }
+                ],
+                heart: [
+                    { name: 'Mike Chen', avatar: 'https://via.placeholder.com/40x40' },
+                    { name: 'Emma Davis', avatar: 'https://via.placeholder.com/40x40' }
+                ],
+                sad: [
+                    { name: 'Tom Brown', avatar: 'https://via.placeholder.com/40x40' }
+                ],
+                laugh: [
+                    { name: 'Anna Lee', avatar: 'https://via.placeholder.com/40x40' },
+                    { name: 'Peter Smith', avatar: 'https://via.placeholder.com/40x40' }
+                ]
+            };
+
+            const people = reactions[type] || [];
+            people.forEach(person => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center space-x-4';
+                div.innerHTML = `<img src="${person.avatar}" alt="User Avatar" class="w-10 h-10 rounded-full"> <p class="font-semibold">${person.name}</p>`;
+                reactionList.appendChild(div);
+            });
+
+            document.getElementById('reactionPopup').classList.remove('hidden');
+        }
+
+        function closeReactionPopup() {
+            document.getElementById('reactionPopup').classList.add('hidden');
+        }
+
+        // Redirect to game-review.html for review content (excluding avatar and reactions)
+        document.querySelectorAll('.review-content').forEach(content => {
+            content.addEventListener('click', (e) => {
+                // Check if the click is not on a reaction button or avatar
+                const isReaction = e.target.closest('button') !== null;
+                const isAvatar = e.target.closest('img') !== null;
+                if (!isReaction && !isAvatar) {
+                    window.location.href = content.getAttribute('data-href');
+                }
+            });
+        });
+    </script>
+
+    <script type="module" src="./js/event.js"></script>
+</body>
+
+</html>

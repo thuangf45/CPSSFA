@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Games - Kontroller</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/custom.css">
+    <style>
+        /* Custom CSS for fixed poster size */
+        .game-poster {
+            width: 200px;
+            height: 300px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Header with Avatar, Username and Main Toolbar -->
+    <header class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <!-- Top Bar with Avatar, Username and Search -->
+            <div class="flex flex-col md:flex-row items-center justify-between mb-4 space-y-4 md:space-y-0">
+                <!-- Left side: Avatar and Username -->
+                <div class="flex items-center space-x-3">
+                    <img id="avatar" alt="Avatar" class="w-12 h-12 rounded-full border-2 border-blue-500">
+                    <div>
+                        <h2 id="usernameDisplay" class="text-lg font-bold text-white">Username</h2>
+                    </div>
+                </div>
+
+                <!-- Right side: Search -->
+                <div class="w-full md:w-auto">
+                    <div class="relative ml-auto w-64 max-[520px]:w-full max-[520px]:max-w-[520px]">
+                        <input type="text" placeholder="Search for games"
+                            class="w-full bg-gray-700 text-white px-4 py-2 pr-10 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none" />
+                        <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Navigation -->
+            <nav class="flex space-x-4 overflow-x-auto pb-2">
+                <a href="home.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Home</a>
+                <a href="profile.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Profile</a>
+                <a href="reviews.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Reviews</a>
+                <a href="#" class="bg-blue-600 text-white px-4 py-2 rounded-lg whitespace-nowrap">Games</a>
+                <a href="reaction.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Reaction</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Page Title -->
+        <h1 class="text-3xl font-bold mb-8">Games</h1>
+
+        <!-- Filter Bar -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <div class="flex flex-wrap gap-4 items-center">
+                <!-- Genre Filter -->
+                <div class="flex flex-col">
+                    <label class="text-sm text-gray-400 mb-1">Genre</label>
+                    <select
+                        class="bg-gray-700 text-white px-4 py-2 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Genres</option>
+                        <option value="action">Action</option>
+                        <option value="adventure">Adventure</option>
+                        <option value="rpg">RPG</option>
+                        <option value="strategy">Strategy</option>
+                        <option value="simulation">Simulation</option>
+                        <option value="sports">Sports</option>
+                        <option value="puzzle">Puzzle</option>
+                        <option value="horror">Horror</option>
+                    </select>
+                </div>
+
+                <!-- Platform/Service Filter -->
+                <div class="flex flex-col">
+                    <label class="text-sm text-gray-400 mb-1">Platform/Service</label>
+                    <select
+                        class="bg-gray-700 text-white px-4 py-2 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Platforms</option>
+                        <option value="steam">Steam</option>
+                        <option value="nintendo">Nintendo Switch</option>
+                        <option value="playstation">PlayStation</option>
+                        <option value="xbox">Xbox</option>
+                        <option value="epic">Epic Games</option>
+                        <option value="mobile">Mobile</option>
+                    </select>
+                </div>
+
+                <!-- Sort By Filter -->
+                <div class="flex flex-col">
+                    <label class="text-sm text-gray-400 mb-1">Sort by</label>
+                    <select
+                        class="bg-gray-700 text-white px-4 py-2 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="date_logged">Date Logged</option>
+                        <option value="date_published">Date Published</option>
+                        <option value="rating_avg">Average Rating</option>
+                        <option value="rating_user">Your Rating</option>
+                        <option value="title">Title</option>
+                    </select>
+                </div>
+
+                <!-- Games Reviewed Filter -->
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="reviewed" class="text-blue-600 focus:ring-blue-500 rounded">
+                    <label for="reviewed" class="text-sm text-gray-300">Games Reviewed</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Games Grid -->
+        <div id="gameList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+            <!-- Dynamic game cards will be inserted here by JavaScript -->
+        </div>
+
+        <!-- Load More Button -->
+        <div class="text-center mt-12">
+            <button id="loadMoreBtn"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+                Load More Games
+            </button>
+        </div>
+    </main>
+
+    <script>
+        // Simple interaction for filters
+        document.querySelectorAll('select').forEach(select => {
+            select.addEventListener('change', function () {
+                console.log('Filter changed:', this.value);
+                // Here you would implement the filtering logic
+            });
+        });
+
+        // Game card click handler
+        document.querySelectorAll('.group').forEach(card => {
+            card.addEventListener('click', function () {
+                console.log('Game clicked');
+                // Here you would navigate to the game detail page
+            });
+        });
+    </script>
+    <script type="module" src="./js/event.js"></script>
+
+    <script>
+        // Simple interaction for filters
+        document.querySelectorAll('select').forEach(select => {
+            select.addEventListener('change', function () {
+                console.log('Filter changed:', this.value);
+                // Here you would implement the filtering logic
+            });
+        });
+
+        // Game card click handler
+        document.querySelectorAll('.group').forEach(card => {
+            card.addEventListener('click', function () {
+                console.log('Game clicked');
+                // Here you would navigate to the game detail page
+            });
+        });
+    </script>
+</body>
+
+</html>

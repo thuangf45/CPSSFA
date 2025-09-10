@@ -1,0 +1,58 @@
+body {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+  font-family: Arial, sans-serif;
+}
+
+#loggedGamesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.game-card {
+  background: #2a2a2a;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.game-card .rating {
+  color: #ffd700;
+  font-size: 1.2em;
+}
+
+#profileSection {
+  padding: 20px;
+  background: #333;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+#profileSection input {
+  background: #444;
+  color: #e0e0e0;
+  border: 1px solid #555;
+  padding: 5px;
+  margin: 5px 0;
+}
+
+#statsSection, #recentLogs, #recentReviews, #mostLikedReviews, #popularLists {
+  margin: 10px 0;
+}
+
+#loadMoreGames {
+  display: block;
+  margin: 20px auto;
+  padding: 10px 20px;
+  background: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#loadMoreGames:hover {
+  background: #357abd;
+}

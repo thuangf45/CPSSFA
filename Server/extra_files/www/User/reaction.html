@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontroller</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/custom.css">
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Header with Avatar, Username and Main Toolbar -->
+    <header class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <!-- Top Bar with Avatar, Username and Search -->
+            <div class="flex flex-col md:flex-row items-center justify-between mb-4 space-y-4 md:space-y-0">
+                <!-- Left side: Avatar and Username -->
+                <div class="flex items-center space-x-3">
+                    <img src="https://via.placeholder.com/50x50" id="avatar" alt="Avatar"
+                        class="w-12 h-12 rounded-full border-2 border-blue-500">
+                    <div>
+                        <h2 id="usernameDisplay" class="text-lg font-bold text-white">Username</h2>
+                    </div>
+                </div>
+
+                <!-- Right side: Search -->
+                <div class="w-full md:w-auto">
+                    <div class="relative ml-auto w-64 max-[520px]:w-full max-[520px]:max-w-[520px]">
+                        <input type="text" placeholder="Search for games"
+                            class="w-full bg-gray-700 text-white px-4 py-2 pr-10 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none" />
+                        <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Navigation -->
+            <nav class="flex space-x-4 overflow-x-auto pb-2">
+                <a href="home.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Home</a>
+                <a href="profile.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Profile</a>
+                <a href="reviews.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Reviews</a>
+                <a href="games.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Games</a>
+                <a href="#" class="bg-blue-600 text-white px-4 py-2 rounded-lg whitespace-nowrap">Reaction</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Page Title -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold mb-8">Things i liked</h1>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="mb-8 bg-gray-800 p-4 rounded-lg">
+            <div class="flex flex-wrap gap-4">
+                <select
+                    class="bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Types</option>
+                    <option value="games">Games</option>
+                    <option value="reviews">Reviews</option>
+                    <option value="comments">Comments</option>
+                </select>
+
+                <select
+                    class="bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="date_desc">Sort by Date (Newest)</option>
+                    <option value="date_asc">Sort by Date (Oldest)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Likes List -->
+        <div class="space-y-6">
+            <!-- Liked Game 1 -->
+            <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
+                <div class="flex gap-6">
+                    <!-- Game Poster -->
+                    <div class="flex-shrink-0">
+                        <img src="https://via.placeholder.com/120x160" alt="The Witcher 3"
+                            class="w-20 h-28 object-cover rounded-lg shadow-lg cursor-pointer hover:opacity-80 transition-opacity">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fas fa-gamepad text-blue-400"></i>
+                                    <span class="text-sm text-gray-400">Game</span>
+                                </div>
+                                <h3
+                                    class="text-xl font-bold text-white mb-1 cursor-pointer hover:text-blue-400 transition-colors">
+                                    The Witcher 3: Wild Hunt</h3>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex text-yellow-400">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <span class="text-gray-400">Your rating: 5/5</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-gray-400 text-sm">Liked on March 20, 2025</p>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <i class="fas fa-heart text-red-500 text-sm"></i>
+                                    <span class="text-gray-400 text-sm">Liked</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-gray-300 leading-relaxed">
+                            <p>Your review: "An epic fantasy adventure that sets the bar incredibly high for RPGs. The
+                                storytelling, world-building, and character development are all masterfully crafted.
+                                Every quest feels meaningful and contributes to the overall narrative."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liked Review 1 -->
+            <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
+                <div class="flex gap-6">
+                    <!-- User Avatar -->
+                    <div class="flex-shrink-0">
+                        <img src="https://via.placeholder.com/60" alt="Sarah's Avatar"
+                            class="w-12 h-12 rounded-full border-2 border-green-500">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <span class="text-sm text-gray-400">Review by <span
+                                            class="text-blue-400 cursor-pointer hover:underline">@sarah_gamer</span></span>
+                                </div>
+                                <h3
+                                    class="text-xl font-bold text-white mb-1 cursor-pointer hover:text-blue-400 transition-colors">
+                                    Baldur's Gate 3</h3>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex text-yellow-400">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <span class="text-gray-400">5/5</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-gray-400 text-sm">Liked on March 18, 2025</p>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <i class="fas fa-heart text-red-500 text-sm"></i>
+                                    <span class="text-gray-400 text-sm">127 likes</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-gray-300 leading-relaxed border-l-4 border-blue-500 pl-4">
+                            <p>"Larian Studios has created what might be the greatest CRPG of all time. The depth of
+                                character customization, the branching storylines, and the incredible voice acting make
+                                every playthrough feel unique. The tactical combat is challenging and rewarding, and the
+                                multiplayer integration is seamless."</p>
+                            <p class="mt-2">"This is a game that respects player choice and consequences in ways that
+                                few others do. Absolutely essential for any RPG fan."</p>
+                        </div>
+
+                        <!-- Tags from original review -->
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            <span class="bg-purple-600 text-xs px-2 py-1 rounded-full">#crpg</span>
+                            <span class="bg-purple-600 text-xs px-2 py-1 rounded-full">#masterpiece</span>
+                            <span class="bg-purple-600 text-xs px-2 py-1 rounded-full">#multiplayer</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liked Comment 1 -->
+            <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
+                <div class="flex gap-6">
+                    <!-- User Avatar -->
+                    <div class="flex-shrink-0">
+                        <img src="https://via.placeholder.com/60" alt="Mike's Avatar"
+                            class="w-12 h-12 rounded-full border-2 border-purple-500">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fas fa-comment text-green-400"></i>
+                                    <span class="text-sm text-gray-400">Comment by <span
+                                            class="text-blue-400 cursor-pointer hover:underline">@mike_plays</span> on
+                                        <span class="text-blue-400 cursor-pointer hover:underline">Elden Ring
+                                            review</span></span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-gray-400 text-sm">Liked on March 16, 2025</p>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <i class="fas fa-heart text-red-500 text-sm"></i>
+                                    <span class="text-gray-400 text-sm">43 likes</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-gray-300 leading-relaxed border-l-4 border-green-500 pl-4">
+                            <p>"I completely agree with this review! The boss design in Elden Ring is absolutely
+                                phenomenal. Each boss feels like a unique puzzle that requires different strategies.
+                                Margit alone probably took me 50 attempts, but when I finally beat him, it felt
+                                incredibly rewarding. FromSoftware really knows how to make difficulty feel fair and
+                                satisfying."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liked Game 2 -->
+            <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
+                <div class="flex gap-6">
+                    <!-- Game Poster -->
+                    <div class="flex-shrink-0">
+                        <img src="https://via.placeholder.com/120x160" alt="Hades"
+                            class="w-20 h-28 object-cover rounded-lg shadow-lg cursor-pointer hover:opacity-80 transition-opacity">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fas fa-gamepad text-blue-400"></i>
+                                    <span class="text-sm text-gray-400">Game</span>
+                                </div>
+                                <h3
+                                    class="text-xl font-bold text-white mb-1 cursor-pointer hover:text-blue-400 transition-colors">
+                                    Hades</h3>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex text-yellow-400">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <span class="text-gray-400">Your rating: 5/5</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-gray-400 text-sm">Liked on March 14, 2025</p>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <i class="fas fa-heart text-red-500 text-sm"></i>
+                                    <span class="text-gray-400 text-sm">Liked</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-gray-300 leading-relaxed">
+                            <p>Your review: "Supergiant Games has perfected the roguelike formula. The narrative
+                                integration is brilliant - every death feels meaningful and progresses the story. The
+                                combat is fluid and satisfying, and the art and music are absolutely stunning."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liked Review 2 -->
+            <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
+                <div class="flex gap-6">
+                    <!-- User Avatar -->
+                    <div class="flex-shrink-0">
+                        <img src="https://via.placeholder.com/60" alt="Alex's Avatar"
+                            class="w-12 h-12 rounded-full border-2 border-yellow-500">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <span class="text-sm text-gray-400">Review by <span
+                                            class="text-blue-400 cursor-pointer hover:underline">@alex_reviews</span></span>
+                                </div>
+                                <h3
+                                    class="text-xl font-bold text-white mb-1 cursor-pointer hover:text-blue-400 transition-colors">
+                                    Disco Elysium</h3>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex text-yellow-400">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <span class="text-gray-400">5/5</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-gray-400 text-sm">Liked on March 12, 2025</p>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <i class="fas fa-heart text-red-500 text-sm"></i>
+                                    <span class="text-gray-400 text-sm">89 likes</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-gray-300 leading-relaxed border-l-4 border-blue-500 pl-4">
+                            <p>"This isn't just a game, it's a work of art. The writing is some of the best I've ever
+                                encountered in any medium. Every conversation is a masterclass in character development
+                                and world-building. The skill system creates genuinely different ways to approach
+                                problems and conversations."</p>
+                            <p class="mt-2">"ZA/UM has created something truly unique - a detective RPG that's more
+                                interested in exploring the human condition than solving crimes. Absolutely brilliant."
+                            </p>
+                        </div>
+
+                        <!-- Tags from original review -->
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            <span class="bg-purple-600 text-xs px-2 py-1 rounded-full">#narrative</span>
+                            <span class="bg-purple-600 text-xs px-2 py-1 rounded-full">#detective</span>
+                            <span class="bg-purple-600 text-xs px-2 py-1 rounded-full">#artgame</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liked Comment 2 -->
+            <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
+                <div class="flex gap-6">
+                    <!-- User Avatar -->
+                    <div class="flex-shrink-0">
+                        <img src="https://via.placeholder.com/60" alt="Emma's Avatar"
+                            class="w-12 h-12 rounded-full border-2 border-pink-500">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fas fa-comment text-green-400"></i>
+                                    <span class="text-sm text-gray-400">Comment by <span
+                                            class="text-blue-400 cursor-pointer hover:underline">@emma_gaming</span> on
+                                        <span class="text-blue-400 cursor-pointer hover:underline">Hollow Knight
+                                            review</span></span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-gray-400 text-sm">Liked on March 10, 2025</p>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <i class="fas fa-heart text-red-500 text-sm"></i>
+                                    <span class="text-gray-400 text-sm">28 likes</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-gray-300 leading-relaxed border-l-4 border-green-500 pl-4">
+                            <p>"The atmosphere in Hollow Knight is just incredible! I spent hours just exploring and
+                                soaking in the ambience. The way the music and art work together to create this
+                                melancholic but beautiful world is simply perfect. Team Cherry really understands how to
+                                make exploration feel rewarding."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liked Game 3 -->
+            <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
+                <div class="flex gap-6">
+                    <!-- Game Poster -->
+                    <div class="flex-shrink-0">
+                        <img src="https://via.placeholder.com/120x160" alt="Celeste"
+                            class="w-20 h-28 object-cover rounded-lg shadow-lg cursor-pointer hover:opacity-80 transition-opacity">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fas fa-gamepad text-blue-400"></i>
+                                    <span class="text-sm text-gray-400">Game</span>
+                                </div>
+                                <h3
+                                    class="text-xl font-bold text-white mb-1 cursor-pointer hover:text-blue-400 transition-colors">
+                                    Celeste</h3>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex text-yellow-400">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <span class="text-gray-400">Your rating: 5/5</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-gray-400 text-sm">Liked on March 8, 2025</p>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <i class="fas fa-heart text-red-500 text-sm"></i>
+                                    <span class="text-gray-400 text-sm">Liked</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-gray-300 leading-relaxed">
+                            <p>Your review: "A perfect platformer that combines incredibly tight controls with a
+                                meaningful story about overcoming personal struggles. The difficulty is challenging but
+                                never unfair, and the assist options make it accessible to everyone."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Load More Button -->
+        <div class="text-center mt-12">
+            <button
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors">
+                Load More Likes
+            </button>
+        </div>
+    </main>
+
+    <script>
+        // Add some basic interactivity
+        document.addEventListener('DOMContentLoaded', function () {
+            // Filter functionality
+            const typeFilter = document.querySelector('select');
+            typeFilter.addEventListener('change', function () {
+                const selectedType = this.value;
+                const items = document.querySelectorAll('.bg-gray-800');
+
+                items.forEach(item => {
+                    const typeIcon = item.querySelector('i.fas');
+                    let itemType = '';
+
+                    if (typeIcon.classList.contains('fa-gamepad')) {
+                        itemType = 'games';
+                    } else if (typeIcon.classList.contains('fa-star')) {
+                        itemType = 'reviews';
+                    } else if (typeIcon.classList.contains('fa-comment')) {
+                        itemType = 'comments';
+                    }
+
+                    if (selectedType === '' || selectedType === itemType) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Make clickable elements interactive
+            const clickableElements = document.querySelectorAll('h3, img[alt], .text-blue-400');
+            clickableElements.forEach(element => {
+                element.addEventListener('click', function () {
+                    console.log('Navigate to:', this.textContent || this.alt);
+                });
+            });
+        });
+    </script>
+    <script type="module" src="./js/event.js"></script>
+</body>
+
+</html>

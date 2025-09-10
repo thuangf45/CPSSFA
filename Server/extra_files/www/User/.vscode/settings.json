@@ -1,0 +1,7 @@
+{
+  "files.autoSave": "off",
+  "liveshare.features": {
+    "shareDebug": false,
+    "shareTerminal": false
+  }
+}

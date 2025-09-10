@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews - Kontroller</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/custom.css">
+    <style>
+        .review-card {
+            transition: all 0.3s ease;
+        }
+
+        .review-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .star-rating {
+            cursor: pointer;
+        }
+
+        .star-rating .star {
+            transition: color 0.2s ease;
+        }
+
+        .star-rating .star:hover,
+        .star-rating .star.active {
+            color: #fbbf24;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .loading.active {
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Header with Avatar, Username and Main Toolbar -->
+    <header class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <!-- Top Bar with Avatar, Username and Search -->
+            <div class="flex flex-col md:flex-row items-center justify-between mb-4 space-y-4 md:space-y-0">
+                <!-- Left side: Avatar and Username -->
+                <div class="flex items-center space-x-3">
+                    <img src="https://via.placeholder.com/50x50" id="avatar" alt="Avatar"
+                        class="w-12 h-12 rounded-full border-2 border-blue-500">
+                    <div>
+                        <h2 id="usernameDisplay" class="text-lg font-bold text-white">Username</h2>
+                    </div>
+                </div>
+
+                <!-- Right side: Search -->
+                <div class="w-full md:w-auto">
+                    <div class="relative ml-auto w-64 max-[520px]:w-full max-[520px]:max-w-[520px]">
+                        <input type="text" placeholder="Search for games"
+                            class="w-full bg-gray-700 text-white px-4 py-2 pr-10 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none" />
+                        <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Navigation -->
+            <nav class="flex space-x-4 overflow-x-auto pb-2">
+                <a href="home.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Home</a>
+                <a href="profile.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Profile</a>
+                <a href="#" class="bg-blue-600 text-white px-4 py-2 rounded-lg whitespace-nowrap">Reviews</a>
+                <a href="games.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Games</a>
+                <a href="reaction.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Reaction</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Page Title and Stats -->
+        <div class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">My Reviews</h1>
+                <p class="text-gray-400" id="reviewStats">Total: <span id="totalReviews">0</span> reviews </p>
+            </div>
+            <!-- <button id="addReviewBtn" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-medium flex items-center transition-colors">
+                <i class="fas fa-plus mr-2"></i>Add Review
+            </button> -->
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="mb-8 bg-gray-800 p-4 rounded-lg">
+            <div class="flex flex-wrap gap-4 items-center">
+                <select id="genreFilter"
+                    class="bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                    <option value="">All Genres</option>
+                    <option value="action">Action</option>
+                    <option value="adventure">Adventure</option>
+                    <option value="rpg">RPG</option>
+                    <option value="strategy">Strategy</option>
+                    <option value="simulation">Simulation</option>
+                    <option value="sports">Sports</option>
+                    <option value="racing">Racing</option>
+                    <option value="puzzle">Puzzle</option>
+                    <option value="indie">Indie</option>
+                </select>
+
+                <select id="platformFilter"
+                    class="bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                    <option value="">All Platforms</option>
+                    <option value="pc">PC</option>
+                    <option value="playstation">PlayStation</option>
+                    <option value="xbox">Xbox</option>
+                    <option value="nintendo">Nintendo Switch</option>
+                    <option value="mobile">Mobile</option>
+                </select>
+
+                <select id="sortFilter"
+                    class="bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                    <option value="date_desc">Sort by Date (Newest)</option>
+                    <option value="date_asc">Sort by Date (Oldest)</option>
+                    <option value="rating_desc">Sort by Rating (High to Low)</option>
+                    <option value="rating_asc">Sort by Rating (Low to High)</option>
+                    <option value="likes_desc">Sort by Likes (Most)</option>
+                    <option value="likes_asc">Sort by Likes (Least)</option>
+                    <option value="title_asc">Sort by Title (A-Z)</option>
+                    <option value="title_desc">Sort by Title (Z-A)</option>
+                </select>
+
+                <button id="clearFilters"
+                    class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-medium transition-colors">
+                    <i class="fas fa-times mr-2"></i>Clear Filters
+                </button>
+
+                <div class="ml-auto text-gray-400 text-sm">
+                    Showing <span id="showingCount">0</span> of <span id="totalCount">0</span> reviews
+                </div>
+            </div>
+        </div>
+
+        <!-- Reviews List -->
+        <div id="reviewsList" class="space-y-6">
+            <!-- Reviews will be populated by JavaScript -->
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="text-center py-12 hidden">
+            <i class="fas fa-search text-4xl text-gray-600 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-400 mb-2">No reviews found</h3>
+            <p class="text-gray-500">Try adjusting your filters or search terms</p>
+        </div>
+
+        <!-- Load More Button -->
+        <div class="text-center mt-12" id="loadMoreSection">
+            <button id="loadMoreBtn"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors">
+                <span class="loading" id="loadingIcon">
+                    <i class="fas fa-spinner fa-spin mr-2"></i>Loading...
+                </span>
+                <span id="loadMoreText">Load More Reviews</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- Add Review Modal -->
+    <div id="addReviewModal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Add New Review</h2>
+                <button id="closeModal" class="text-gray-400 hover:text-white text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="reviewForm">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Game Title</label>
+                    <input type="text" id="gameTitle"
+                        class="w-full bg-gray-700 text-white px-4 py-2 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+                        required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Rating</label>
+                    <div class="star-rating flex gap-1" id="modalStarRating">
+                        <i class="fas fa-star star text-2xl text-gray-600" data-rating="1"></i>
+                        <i class="fas fa-star star text-2xl text-gray-600" data-rating="2"></i>
+                        <i class="fas fa-star star text-2xl text-gray-600" data-rating="3"></i>
+                        <i class="fas fa-star star text-2xl text-gray-600" data-rating="4"></i>
+                        <i class="fas fa-star star text-2xl text-gray-600" data-rating="5"></i>
+                    </div>
+                    <input type="hidden" id="ratingValue" value="0">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Review</label>
+                    <textarea id="reviewText" rows="6"
+                        class="w-full bg-gray-700 text-white px-4 py-2 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+                        placeholder="Write your review here..." required></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Tags (comma separated)</label>
+                    <input type="text" id="reviewTags"
+                        class="w-full bg-gray-700 text-white px-4 py-2 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+                        placeholder="e.g. masterpiece, openworld, challenging">
+                </div>
+
+                <div class="flex gap-4">
+                    <button type="submit"
+                        class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-save mr-2"></i>Save Review
+                    </button>
+                    <button type="button" id="cancelReview"
+                        class="bg-gray-600 hover:bg-gray-700 px-6 py-2 rounded-lg font-medium transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Game reviews data
+        let reviews = [
+            {
+                id: 1,
+                title: "Elden Ring",
+                rating: 5,
+                date: "2025-03-15",
+                likes: 24,
+                content: "An absolute masterpiece that redefines the open-world genre. FromSoftware has created something truly magical with Elden Ring. The world design is breathtaking, the combat is refined and challenging, and the story unfolds in the most intriguing way possible. Every corner of the Lands Between holds secrets and surprises that make exploration genuinely rewarding.\n\nThe boss battles are some of the best in gaming history, each one requiring different strategies and approaches. The multiplayer integration feels seamless and adds so much to the experience. This is easily one of the best games ever made.",
+                tags: ["masterpiece", "openworld", "challenging"],
+                genre: "action",
+                platform: "pc",
+                poster: "https://via.placeholder.com/120x160/2C5234/ffffff?text=Elden+Ring"
+            },
+            {
+                id: 2,
+                title: "God of War Ragnarök",
+                rating: 4,
+                date: "2025-02-08",
+                likes: 18,
+                content: "A worthy sequel that delivers on almost every front. The relationship between Kratos and Atreus continues to be the heart of the game, and watching it evolve throughout the story is genuinely touching. The combat feels great, the visuals are stunning, and the Norse mythology continues to be fascinating.\n\nWhile it doesn't quite reach the heights of its predecessor in terms of surprise and innovation, it's still an exceptional game that any action-adventure fan should play.",
+                tags: ["mythology", "fatherhood", "actionadventure"],
+                genre: "action",
+                platform: "playstation",
+                poster: "https://via.placeholder.com/120x160/8B4513/ffffff?text=God+of+War"
+            },
+            {
+                id: 3,
+                title: "Hollow Knight",
+                rating: 5,
+                date: "2025-01-22",
+                likes: 31,
+                content: "An indie masterpiece that rivals the best AAA metroidvanias. The hand-drawn art style is absolutely gorgeous, the soundtrack is hauntingly beautiful, and the gameplay is incredibly tight and responsive. Hallownest is one of the most atmospheric game worlds I've ever explored.\n\nThe difficulty is challenging but fair, and the sense of discovery and progression is unmatched. Team Cherry created something truly special here.",
+                tags: ["metroidvania", "indie", "atmospheric"],
+                genre: "indie",
+                platform: "pc",
+                poster: "https://via.placeholder.com/120x160/4B0082/ffffff?text=Hollow+Knight"
+            },
+            {
+                id: 4,
+                title: "Cyberpunk 2077",
+                rating: 3,
+                date: "2024-12-10",
+                likes: 12,
+                content: "After the recent updates, Cyberpunk 2077 is finally approaching what it should have been at launch. Night City is visually stunning and the main story with Johnny Silverhand is compelling. The side quests have improved significantly and feel more meaningful.\n\nHowever, it still feels like it's missing some of the depth that was originally promised. It's a good game now, but not the revolutionary experience we were hoping for.",
+                tags: ["cyberpunk", "rpg", "improved"],
+                genre: "rpg",
+                platform: "pc",
+                poster: "https://via.placeholder.com/120x160/FFD700/000000?text=Cyberpunk"
+            }
+        ];
+
+        let filteredReviews = [...reviews];
+        let displayedReviews = [];
+        let reviewsPerPage = 4;
+        let currentPage = 1;
+
+        // DOM Elements
+        const reviewsList = document.getElementById('reviewsList');
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        const loadMoreText = document.getElementById('loadMoreText');
+        const loadingIcon = document.getElementById('loadingIcon');
+        const genreFilter = document.getElementById('genreFilter');
+        const platformFilter = document.getElementById('platformFilter');
+        const sortFilter = document.getElementById('sortFilter');
+        const clearFilters = document.getElementById('clearFilters');
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        const addReviewBtn = document.getElementById('addReviewBtn');
+        const addReviewModal = document.getElementById('addReviewModal');
+        const closeModal = document.getElementById('closeModal');
+        const cancelReview = document.getElementById('cancelReview');
+        const reviewForm = document.getElementById('reviewForm');
+        const noResults = document.getElementById('noResults');
+        const totalReviews = document.getElementById('totalReviews');
+        const showingCount = document.getElementById('showingCount');
+        const totalCount = document.getElementById('totalCount');
+
+        // Initialize page
+        function init() {
+            applyFilters();
+            updateStats();
+            setupEventListeners();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Filter events
+            genreFilter.addEventListener('change', applyFilters);
+            platformFilter.addEventListener('change', applyFilters);
+            sortFilter.addEventListener('change', applyFilters);
+            clearFilters.addEventListener('click', clearAllFilters);
+
+            // Search functionality
+            searchInput.addEventListener('input', debounce(handleSearch, 300));
+            searchInput.addEventListener('focus', showSearchResults);
+            searchInput.addEventListener('blur', hideSearchResults);
+
+            // Load more
+            loadMoreBtn.addEventListener('click', loadMoreReviews);
+
+            // Modal events
+            addReviewBtn.addEventListener('click', openAddReviewModal);
+            closeModal.addEventListener('click', closeAddReviewModal);
+            cancelReview.addEventListener('click', closeAddReviewModal);
+            reviewForm.addEventListener('submit', handleAddReview);
+
+            // Star rating in modal
+            setupModalStarRating();
+
+            // Close modal on outside click
+            addReviewModal.addEventListener('click', (e) => {
+                if (e.target === addReviewModal) {
+                    closeAddReviewModal();
+                }
+            });
+        }
+
+        // Debounce function for search
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Apply filters and sorting
+        function applyFilters() {
+            const genre = genreFilter.value;
+            const platform = platformFilter.value;
+            const sort = sortFilter.value;
+            const searchTerm = searchInput.value.toLowerCase();
+
+            filteredReviews = reviews.filter(review => {
+                const matchesGenre = !genre || review.genre === genre;
+                const matchesPlatform = !platform || review.platform === platform;
+                const matchesSearch = !searchTerm ||
+                    review.title.toLowerCase().includes(searchTerm) ||
+                    review.content.toLowerCase().includes(searchTerm) ||
+                    review.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+
+                return matchesGenre && matchesPlatform && matchesSearch;
+            });
+
+            // Apply sorting
+            filteredReviews.sort((a, b) => {
+                switch (sort) {
+                    case 'date_desc':
+                        return new Date(b.date) - new Date(a.date);
+                    case 'date_asc':
+                        return new Date(a.date) - new Date(b.date);
+                    case 'rating_desc':
+                        return b.rating - a.rating;
+                    case 'rating_asc':
+                        return a.rating - b.rating;
+                    case 'likes_desc':
+                        return b.likes - a.likes;
+                    case 'likes_asc':
+                        return a.likes - b.likes;
+                    case 'title_asc':
+                        return a.title.localeCompare(b.title);
+                    case 'title_desc':
+                        return b.title.localeCompare(a.title);
+                    default:
+                        return 0;
+                }
+            });
+
+            currentPage = 1;
+            displayReviews();
+            updateFilterStats();
+        }
+
+        // Display reviews
+        function displayReviews() {
+            const startIndex = 0;
+            const endIndex = currentPage * reviewsPerPage;
+            displayedReviews = filteredReviews.slice(startIndex, endIndex);
+
+            if (displayedReviews.length === 0) {
+                reviewsList.innerHTML = '';
+                noResults.classList.remove('hidden');
+                document.getElementById('loadMoreSection').classList.add('hidden');
+                return;
+            }
+
+            noResults.classList.add('hidden');
+            reviewsList.innerHTML = displayedReviews.map(review => createReviewHTML(review)).join('');
+
+            // Show/hide load more button
+            if (displayedReviews.length >= filteredReviews.length) {
+                document.getElementById('loadMoreSection').classList.add('hidden');
+            } else {
+                document.getElementById('loadMoreSection').classList.remove('hidden');
+            }
+
+            // Add click events to game elements
+            addGameClickEvents();
+        }
+
+        // Create review HTML
+        function createReviewHTML(review) {
+            const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+            const formattedDate = new Date(review.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            return `
+                <div class="bg-gray-800 rounded-lg p-6 review-card fade-in" data-review-id="${review.id}">
+                    <div class="flex gap-6">
+                        <!-- Game Poster -->
+                        <div class="flex-shrink-0">
+                            <img src="${review.poster}" alt="${review.title}" class="w-20 h-28 object-cover rounded-lg shadow-lg cursor-pointer hover:opacity-80 transition-opacity game-poster">
+                        </div>
+                        
+                        <!-- Review Content -->
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <h3 class="text-xl font-bold text-white mb-1 cursor-pointer hover:text-blue-400 transition-colors game-title">${review.title}</h3>
+                                    <div class="flex items-center gap-2">
+                                        <div class="text-green-400 text-lg">
+                                            ${stars}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-gray-400 text-sm">${formattedDate}</p>
+                                    <div class="flex items-center gap-1 mt-1">
+                                        <button class="like-btn flex items-center gap-1 hover:text-red-400 transition-colors" data-review-id="${review.id}">
+                                            <i class="fas fa-heart text-red-500 text-sm"></i>
+                                            <span class="text-gray-400 text-sm like-count">${review.likes} likes</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-gray-300 leading-relaxed">
+                                ${review.content.split('\n').map(paragraph => `<p class="mb-3 last:mb-0">${paragraph}</p>`).join('')}
+                            </div>
+                            
+                            <!-- Tags -->
+                            <div class="flex flex-wrap gap-2 mt-4">
+                                ${review.tags.map(tag => `<span class="bg-blue-600 text-xs px-2 py-1 rounded-full cursor-pointer hover:bg-blue-700 transition-colors" onclick="searchByTag('${tag}')">#${tag}</span>`).join('')}
+                            </div>
+
+                            <!-- Action buttons -->
+                            <div class="flex gap-2 mt-4">
+                                <button class="edit-review-btn bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-xs transition-colors" data-review-id="${review.id}">
+                                    <i class="fas fa-edit mr-1"></i>Edit
+                                </button>
+                                <button class="delete-review-btn bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs transition-colors" data-review-id="${review.id}">
+                                    <i class="fas fa-trash mr-1"></i>Delete
+                                </button>
+                                <button class="share-review-btn bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded text-xs transition-colors" data-review-id="${review.id}">
+                                    <i class="fas fa-share mr-1"></i>Share
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Add click events to game elements
+        function addGameClickEvents() {
+            document.querySelectorAll('.game-title, .game-poster').forEach(element => {
+                element.addEventListener('click', function () {
+                    const reviewCard = this.closest('.review-card');
+                    const reviewId = reviewCard.dataset.reviewId;
+                    const review = reviews.find(r => r.id == reviewId);
+                    navigateToGameDetail(review.title);
+                });
+            });
+
+            // Like button events
+            document.querySelectorAll('.like-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const reviewId = parseInt(this.dataset.reviewId);
+                    toggleLike(reviewId);
+                });
+            });
+
+            // Edit/Delete button events
+            document.querySelectorAll('.edit-review-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const reviewId = parseInt(this.dataset.reviewId);
+                    editReview(reviewId);
+                });
+            });
+
+            document.querySelectorAll('.delete-review-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const reviewId = parseInt(this.dataset.reviewId);
+                    deleteReview(reviewId);
+                });
+            });
+
+            document.querySelectorAll('.share-review-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const reviewId = parseInt(this.dataset.reviewId);
+                    shareReview(reviewId);
+                });
+            });
+        }
+
+        // Navigate to game detail page
+        function navigateToGameDetail(gameTitle) {
+            // In a real app, this would navigate to the game detail page
+            console.log(`Navigate to game detail page for: ${gameTitle}`);
+            alert(`Navigating to ${gameTitle} detail page...`);
+        }
+
+        // Toggle like
+        function toggleLike(reviewId) {
+            const review = reviews.find(r => r.id === reviewId);
+            if (review) {
+                review.likes += 1; // In real app, this would toggle like/unlike
+                displayReviews();
+                updateStats();
+            }
+        }
+
+        // Search functionality
+        function handleSearch() {
+            applyFilters();
+        }
+
+        function showSearchResults() {
+            if (searchInput.value.trim()) {
+                const results = reviews.filter(review =>
+                    review.title.toLowerCase().includes(searchInput.value.toLowerCase())
+                ).slice(0, 5);
+
+                if (results.length > 0) {
+                    searchResults.innerHTML = results.map(review =>
+                        `<div class="p-2 hover:bg-gray-600 cursor-pointer transition-colors" onclick="selectSearchResult('${review.title}')">
+                            <div class="flex items-center gap-2">
+                                <img src="${review.poster}" alt="${review.title}" class="w-8 h-10 object-cover rounded">
+                                <span>${review.title}</span>
+                            </div>
+                        </div>`
+                    ).join('');
+                    searchResults.classList.remove('hidden');
+                }
+            }
+        }
+
+        function hideSearchResults() {
+            setTimeout(() => {
+                searchResults.classList.add('hidden');
+            }, 200);
+        }
+
+        function selectSearchResult(title) {
+            searchInput.value = title;
+            hideSearchResults();
+            applyFilters();
+        }
+
+        // Search by tag
+        function searchByTag(tag) {
+            searchInput.value = tag;
+            applyFilters();
+        }
+
+        // Load more reviews
+        function loadMoreReviews() {
+            loadingIcon.classList.add('active');
+            loadMoreText.style.display = 'none';
+
+            setTimeout(() => {
+                currentPage++;
+                displayReviews();
+                loadingIcon.classList.remove('active');
+                loadMoreText.style.display = 'inline';
+            }, 1000);
+        }
+
+        // Clear all filters
+        function clearAllFilters() {
+            genreFilter.value = '';
+            platformFilter.value = '';
+            sortFilter.value = 'date_desc';
+            searchInput.value = '';
+            applyFilters();
+        }
+
+        // Modal functions
+        function openAddReviewModal() {
+            addReviewModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAddReviewModal() {
+            addReviewModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            reviewForm.reset();
+            resetModalStarRating();
+        }
+
+        // Star rating in modal
+        function setupModalStarRating() {
+            const stars = document.querySelectorAll('#modalStarRating .star');
+            const ratingValue = document.getElementById('ratingValue');
+
+            stars.forEach((star, index) => {
+                star.addEventListener('mouseover', () => {
+                    highlightStars(index + 1);
+                });
+
+                star.addEventListener('mouseout', () => {
+                    highlightStars(parseInt(ratingValue.value));
+                });
+
+                star.addEventListener('click', () => {
+                    const rating = index + 1;
+                    ratingValue.value = rating;
+                    highlightStars(rating);
+                });
+            });
+        }
+
+        function highlightStars(rating) {
+            const stars = document.querySelectorAll('#modalStarRating .star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.remove('text-gray-600');
+                    star.classList.add('text-yellow-400');
+                } else {
+                    star.classList.remove('text-yellow-400');
+                    star.classList.add('text-gray-600');
+                }
+            });
+        }
+
+        function resetModalStarRating() {
+            document.getElementById('ratingValue').value = '0';
+            highlightStars(0);
+        }
+
+        // Handle add review form submission
+        function handleAddReview(e) {
+            e.preventDefault();
+
+            const formData = new FormData(reviewForm);
+            const gameTitle = document.getElementById('gameTitle').value;
+            const rating = parseInt(document.getElementById('ratingValue').value);
+            const reviewText = document.getElementById('reviewText').value;
+            const tags = document.getElementById('reviewTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+
+            if (rating === 0) {
+                alert('Please select a rating');
+                return;
+            }
+
+            const newReview = {
+                id: reviews.length + 1,
+                title: gameTitle,
+                rating: rating,
+                date: new Date().toISOString().split('T')[0],
+                likes: 0,
+                content: reviewText,
+                tags: tags,
+                genre: 'action', // Default genre - in real app, this would be selected
+                platform: 'pc', // Default platform - in real app, this would be selected
+                poster: `https://via.placeholder.com/120x160/4A5568/ffffff?text=${encodeURIComponent(gameTitle.substring(0, 10))}`
+            };
+
+            reviews.unshift(newReview); // Add to beginning of array
+            closeAddReviewModal();
+            applyFilters();
+            updateStats();
+
+            // Show success message
+            showNotification('Review added successfully!', 'success');
+        }
+
+        // Edit review
+        function editReview(reviewId) {
+            const review = reviews.find(r => r.id === reviewId);
+            if (review) {
+                document.getElementById('gameTitle').value = review.title;
+                document.getElementById('ratingValue').value = review.rating;
+                document.getElementById('reviewText').value = review.content;
+                document.getElementById('reviewTags').value = review.tags.join(', ');
+                highlightStars(review.rating);
+
+                openAddReviewModal();
+
+                // Change form submission to update instead of create
+                reviewForm.onsubmit = function (e) {
+                    e.preventDefault();
+                    updateReview(reviewId);
+                };
+            }
+        }
+
+        // Update review
+        function updateReview(reviewId) {
+            const reviewIndex = reviews.findIndex(r => r.id === reviewId);
+            if (reviewIndex !== -1) {
+                const rating = parseInt(document.getElementById('ratingValue').value);
+
+                if (rating === 0) {
+                    alert('Please select a rating');
+                    return;
+                }
+
+                reviews[reviewIndex] = {
+                    ...reviews[reviewIndex],
+                    title: document.getElementById('gameTitle').value,
+                    rating: rating,
+                    content: document.getElementById('reviewText').value,
+                    tags: document.getElementById('reviewTags').value.split(',').map(tag => tag.trim()).filter(tag => tag)
+                };
+
+                closeAddReviewModal();
+                applyFilters();
+                updateStats();
+                showNotification('Review updated successfully!', 'success');
+
+                // Reset form submission
+                reviewForm.onsubmit = handleAddReview;
+            }
+        }
+
+        // Delete review
+        function deleteReview(reviewId) {
+            if (confirm('Are you sure you want to delete this review?')) {
+                reviews = reviews.filter(r => r.id !== reviewId);
+                applyFilters();
+                updateStats();
+                showNotification('Review deleted successfully!', 'success');
+            }
+        }
+
+        // Share review
+        function shareReview(reviewId) {
+            const review = reviews.find(r => r.id === reviewId);
+            if (review) {
+                const shareText = `Check out my review of ${review.title}! I gave it ${review.rating}/5 stars. ${review.content.substring(0, 100)}...`;
+
+                if (navigator.share) {
+                    navigator.share({
+                        title: `${review.title} Review`,
+                        text: shareText,
+                        url: window.location.href
+                    });
+                } else {
+                    // Fallback - copy to clipboard
+                    navigator.clipboard.writeText(shareText).then(() => {
+                        showNotification('Review copied to clipboard!', 'success');
+                    });
+                }
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = reviews.length;
+            totalReviews.textContent = total;
+        }
+
+        // Update filter statistics
+        function updateFilterStats() {
+            showingCount.textContent = displayedReviews.length;
+            totalCount.textContent = filteredReviews.length;
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 transition-all duration-300 transform translate-x-full`;
+
+            switch (type) {
+                case 'success':
+                    notification.classList.add('bg-green-600');
+                    break;
+                case 'error':
+                    notification.classList.add('bg-red-600');
+                    break;
+                case 'warning':
+                    notification.classList.add('bg-yellow-600');
+                    break;
+                default:
+                    notification.classList.add('bg-blue-600');
+            }
+
+            notification.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : type === 'warning' ? 'exclamation' : 'info'}-circle"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+
+            // Animate out and remove
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function (e) {
+            // Ctrl/Cmd + K for search focus
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+
+            // Escape to close modal
+            if (e.key === 'Escape') {
+                if (!addReviewModal.classList.contains('hidden')) {
+                    closeAddReviewModal();
+                }
+            }
+
+            // Ctrl/Cmd + N for new review
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                e.preventDefault();
+                openAddReviewModal();
+            }
+        });
+
+        // Infinite scroll (alternative to load more button)
+        function setupInfiniteScroll() {
+            window.addEventListener('scroll', debounce(() => {
+                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 1000) {
+                    if (displayedReviews.length < filteredReviews.length && !loadingIcon.classList.contains('active')) {
+                        loadMoreReviews();
+                    }
+                }
+            }, 100));
+        }
+
+        // Local storage for user preferences
+        function saveUserPreferences() {
+            const preferences = {
+                genre: genreFilter.value,
+                platform: platformFilter.value,
+                sort: sortFilter.value
+            };
+            // Note: In artifacts, we use variables instead of localStorage
+            window.userPreferences = preferences;
+        }
+
+        function loadUserPreferences() {
+            if (window.userPreferences) {
+                const prefs = window.userPreferences;
+                genreFilter.value = prefs.genre || '';
+                platformFilter.value = prefs.platform || '';
+                sortFilter.value = prefs.sort || 'date_desc';
+            }
+        }
+
+        // Save preferences when filters change
+        genreFilter.addEventListener('change', saveUserPreferences);
+        platformFilter.addEventListener('change', saveUserPreferences);
+        sortFilter.addEventListener('change', saveUserPreferences);
+
+        // Export/Import reviews (for backup)
+        function exportReviews() {
+            const dataStr = JSON.stringify(reviews, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'my-game-reviews.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importReviews(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        const importedReviews = JSON.parse(e.target.result);
+                        if (Array.isArray(importedReviews)) {
+                            reviews = importedReviews;
+                            applyFilters();
+                            updateStats();
+                            showNotification('Reviews imported successfully!', 'success');
+                        } else {
+                            throw new Error('Invalid format');
+                        }
+                    } catch (error) {
+                        showNotification('Error importing reviews. Please check the file format.', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Add export/import buttons to header (you can uncomment to add to UI)
+        /*
+        function addExportImportButtons() {
+            const headerRight = document.querySelector('header .flex.items-center.space-x-4');
+            const exportBtn = document.createElement('button');
+            exportBtn.innerHTML = '<i class="fas fa-download mr-2"></i>Export';
+            exportBtn.className = 'bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg font-medium transition-colors';
+            exportBtn.onclick = exportReviews;
+            
+            const importInput = document.createElement('input');
+            importInput.type = 'file';
+            importInput.accept = '.json';
+            importInput.style.display = 'none';
+            importInput.onchange = importReviews;
+            
+            const importBtn = document.createElement('button');
+            importBtn.innerHTML = '<i class="fas fa-upload mr-2"></i>Import';
+            importBtn.className = 'bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg font-medium transition-colors';
+            importBtn.onclick = () => importInput.click();
+            
+            headerRight.appendChild(exportBtn);
+            headerRight.appendChild(importBtn);
+            headerRight.appendChild(importInput);
+        }
+        */
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUserPreferences();
+            init();
+            // setupInfiniteScroll(); // Uncomment to enable infinite scroll
+            // addExportImportButtons(); // Uncomment to add export/import functionality
+        });
+
+        // Additional utility functions
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength).trim() + '...';
+        }
+
+        function getStarDisplay(rating) {
+            return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+        }
+
+        // Theme switching (bonus feature)
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            // Save theme preference
+            window.themePreference = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+        }
+
+        // Analytics/tracking (placeholder)
+        function trackEvent(eventName, properties = {}) {
+            console.log(`Track Event: ${eventName}`, properties);
+            // In a real app, this would send data to analytics service
+        }
+
+        // Track user interactions
+        function trackUserInteraction() {
+            // Track filter usage
+            genreFilter.addEventListener('change', () => trackEvent('filter_used', { type: 'genre', value: genreFilter.value }));
+            platformFilter.addEventListener('change', () => trackEvent('filter_used', { type: 'platform', value: platformFilter.value }));
+            sortFilter.addEventListener('change', () => trackEvent('filter_used', { type: 'sort', value: sortFilter.value }));
+
+            // Track search usage
+            searchInput.addEventListener('input', debounce(() => {
+                if (searchInput.value.length > 2) {
+                    trackEvent('search_used', { query: searchInput.value.length }); // Don't track actual query for privacy
+                }
+            }, 1000));
+        }
+
+        // Initialize tracking
+        // trackUserInteraction(); // Uncomment to enable tracking
+    </script>
+    <script type="module" src="./js/event.js"></script>
+</body>
+
+</html>

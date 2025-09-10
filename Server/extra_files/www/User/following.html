@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Following - Username</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen text-white">
+    <!-- Header with Back Button -->
+    <header class="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+            <div class="flex items-center">
+                <button onclick="history.back()"
+                    class="text-gray-400 hover:text-white transition-colors text-xl sm:text-2xl">
+                    ← Back
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div class="space-y-6">
+            <!-- Page Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8">
+                <div class="flex items-center space-x-2 mb-4 sm:mb-0">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-white">Following</h1>
+                    <span class="text-blue-400 text-base sm:text-lg font-semibold">(180)</span>
+                </div>
+                <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-3">
+                    <select
+                        class="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm w-full sm:w-auto focus:outline-none focus:border-blue-500">
+                        <option>Sort by Recent</option>
+                        <option>Sort by Name</option>
+                        <option>Sort by Games Played</option>
+                    </select>
+                    <div class="relative w-full sm:w-auto">
+                        <input type="text" placeholder="Search following..."
+                            class="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 pr-8 text-sm w-full focus:outline-none focus:border-blue-500">
+                        <span class="absolute right-2 top-2 text-gray-400">🔍</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Following List -->
+            <section>
+                <div class="space-y-4">
+                    <!-- Following 1 -->
+                    <div
+                        class="flex items-center space-x-3 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-3 sm:p-4 hover:border-blue-500/50 transition-all">
+                        <div
+                            class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-base sm:text-lg font-bold">
+                            JD
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-white text-sm sm:text-base">JohnDoe_Gaming</h3>
+                        </div>
+                        <span class="text-gray-400 text-sm">Followed you</span>
+                    </div>
+
+                    <!-- Following 2 -->
+                    <div
+                        class="flex items-center space-x-3 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-3 sm:p-4 hover:border-blue-500/50 transition-all">
+                        <div
+                            class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center text-base sm:text-lg font-bold">
+                            SG
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-white text-sm sm:text-base">SarahGamer</h3>
+                        </div>
+                        <span class="text-gray-400 text-sm"></span>
+                    </div>
+
+                    <!-- Following 3 -->
+                    <div
+                        class="flex items-center space-x-3 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-3 sm:p-4 hover:border-blue-500/50 transition-all">
+                        <div
+                            class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-red-500 to-orange-600 rounded-full flex items-center justify-center text-base sm:text-lg font-bold">
+                            MX
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-white text-sm sm:text-base">MaxPro_Player</h3>
+                        </div>
+                        <span class="text-gray-400 text-sm">Followed you</span>
+                    </div>
+
+                    <!-- Following 4 -->
+                    <div
+                        class="flex items-center space-x-3 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-3 sm:p-4 hover:border-blue-500/50 transition-all">
+                        <div
+                            class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-full flex items-center justify-center text-base sm:text-lg font-bold">
+                            LN
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-white text-sm sm:text-base">LunaNinja</h3>
+                        </div>
+                        <span class="text-gray-400 text-sm"></span>
+                    </div>
+
+                    <!-- Following 5 -->
+                    <div
+                        class="flex items-center space-x-3 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-3 sm:p-4 hover:border-blue-500/50 transition-all">
+                        <div
+                            class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center text-base sm:text-lg font-bold">
+                            TK
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-white text-sm sm:text-base">TheKnight77</h3>
+                        </div>
+                        <span class="text-gray-400 text-sm">Followed you</span>
+                    </div>
+
+                    <!-- Following 6 -->
+                    <div
+                        class="flex items-center space-x-3 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-3 sm:p-4 hover:border-blue-500/50 transition-all">
+                        <div
+                            class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-base sm:text-lg font-bold">
+                            ZX
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-white text-sm sm:text-base">ZeroXGamer</h3>
+                        </div>
+                        <span class="text-gray-400 text-sm"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Load More Button -->
+            <div class="text-center mt-6 sm:mt-12">
+                <button
+                    class="bg-slate-700 hover:bg-slate-600 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-medium text-sm sm:text-base transition-colors">
+                    Load More Following
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900/50 border-t border-slate-700 mt-12 sm:mt-16">
+        <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 sm:py-8">
+            <div class="text-center text-gray-400 text-xs sm:text-sm">
+                <p>&copy; 2024 Gaming Profile. Connect with gamers worldwide.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Search functionality
+            const searchInput = document.querySelector('input[placeholder="Search following..."]');
+            searchInput.addEventListener('input', function () {
+                const searchTerm = this.value.toLowerCase();
+                const followingCards = document.querySelectorAll('main section div');
+
+                followingCards.forEach(card => {
+                    const username = card.querySelector('h3').textContent.toLowerCase();
+                    if (username.includes(searchTerm)) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+    <script type="module" src="./js/event.js"></script>
+</body>
+
+</html>

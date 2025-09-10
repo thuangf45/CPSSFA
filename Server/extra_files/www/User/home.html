@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontroller</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/custom.css">
+    <style>
+        .scroll-container {
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: thin;
+            -ms-overflow-style: -ms-autohiding-scrollbar;
+        }
+
+        .scroll-container::-webkit-scrollbar {
+            height: 8px;
+            background-color: #4b5563;
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb {
+            background-color: #6b7280;
+            border-radius: 4px;
+        }
+
+        .scroll-container::-webkit-scrollbar-track {
+            background-color: #4b5563;
+        }
+
+        .game-grid {
+            display: inline-flex;
+            gap: 1rem;
+            padding: 0 1rem;
+            min-width: fit-content;
+        }
+
+        .game-item {
+            flex-shrink: 0;
+            width: 150px;
+        }
+
+        .game-poster {
+            width: 150px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            transition: transform 0.2s ease;
+        }
+
+        .game-poster:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Header with Avatar, Username and Main Toolbar -->
+    <header class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <!-- Top Bar with Avatar, Username and Search -->
+            <div class="flex flex-col md:flex-row items-center justify-between mb-4 space-y-4 md:space-y-0">
+                <!-- Left side: Avatar and Username -->
+                <div class="flex items-center space-x-3">
+                    <img src="https://via.placeholder.com/50x50" id="avatar" alt="Avatar"
+                        class="w-12 h-12 rounded-full border-2 border-blue-500">
+                    <div>
+                        <h2 id="usernameDisplay" class="text-lg font-bold text-white">Username</h2>
+                    </div>
+                </div>
+
+                <!-- Right side: Search -->
+                <div class="w-full md:w-auto">
+                    <div class="relative ml-auto w-64 max-[520px]:w-full max-[520px]:max-w-[520px]">
+                        <input type="text" placeholder="Search for games"
+                            class="w-full bg-gray-700 text-white px-4 py-2 pr-10 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none" />
+                        <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Navigation -->
+            <nav class="flex space-x-4 overflow-x-auto pb-2">
+                <a href="#" class="bg-blue-600 text-white px-4 py-2 rounded-lg whitespace-nowrap">Home</a>
+                <a href="profile.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Profile</a>
+                <a href="reviews.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Reviews</a>
+                <a href="games.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Games</a>
+                <a href="reaction.html"
+                    class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap">Reaction</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold mb-2">Friends & People</h1>
+            <p class="text-gray-400">Discover what's trending and see what your friends are playing</p>
+        </div>
+
+        <!-- Popular Section -->
+        <section class="mb-12">
+            <div class="bg-blue-900 text-white py-3 px-6 rounded-t-lg">
+                <h2 class="text-xl font-bold">Popular</h2>
+            </div>
+            <div class="bg-gray-800 rounded-b-lg py-6">
+                <div class="scroll-container">
+                    <div id="gamePopular" class="game-grid">
+                        <!-- Game Item 1 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 2 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 3 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 4 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 5 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 6 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 7 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 8 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Best Games of All Time Section -->
+        <section class="mb-12">
+            <div class="bg-blue-900 text-white py-3 px-6 rounded-t-lg">
+                <h2 class="text-xl font-bold">Best Games of All Time</h2>
+            </div>
+            <div class="bg-gray-800 rounded-b-lg py-6">
+                <div class="scroll-container">
+                    <div id="gameBest" class="game-grid">
+                        <!-- Game Item 1 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                                <p class="text-xs text-gray-400 text-center">Loading...</p>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 2 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                                <p class="text-xs text-gray-400 text-center">Loading...</p>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 3 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                                <p class="text-xs text-gray-400 text-center">Loading...</p>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 4 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                                <p class="text-xs text-gray-400 text-center">Loading...</p>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 5 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                                <p class="text-xs text-gray-400 text-center">Loading...</p>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 6 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                                <p class="text-xs text-gray-400 text-center">Loading...</p>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 7 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                                <p class="text-xs text-gray-400 text-center">Loading...</p>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 8 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Spider-Man" class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                                <p class="text-xs text-gray-400 text-center">Loading...</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- All Games Section -->
+        <section class="mb-12">
+            <div class="bg-blue-900 text-white py-3 px-6 rounded-t-lg">
+                <h2 class="text-xl font-bold">All Games</h2>
+            </div>
+            <div class="bg-gray-800 rounded-b-lg py-6">
+                <div class="scroll-container">
+                    <div id="gamePagination" class="game-grid">
+                        <!-- Game Item 1 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 2 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 3 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 4 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 5 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 6 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 7 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 8 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 9 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+
+                        <!-- Game Item 10 -->
+                        <div class="game-item">
+                            <a href="game-detail.html" class="block">
+                                <img src="https://via.placeholder.com" alt="Loading..." class="game-poster">
+                                <h3 class="text-sm font-medium mt-2 text-center">Loading...</h3>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div id="pagination" class="flex justify-center mt-4 space-x-2">
+                    <!-- Nút Previous -->
+                    <button id="pagePrev"
+                        class="prev-btn bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors duration-200 font-medium">
+                        «
+                    </button>
+
+                    <!-- Các số trang -->
+                    <button id="pageFirst"
+                        class="page-btn bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors duration-200 font-medium"
+                        data-page="1">
+                        1
+                    </button>
+                    <button id="pageSecond"
+                        class="page-btn bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors duration-200 font-medium"
+                        data-page="2">
+                        2
+                    </button>
+                    <button id="pageThird"
+                        class="page-btn bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors duration-200 font-medium"
+                        data-page="3">
+                        3
+                    </button>
+
+                    <!-- Nút Next -->
+                    <button id="pageNext"
+                        class="next-btn bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors duration-200 font-medium">
+                        »
+                    </button>
+                </div>
+
+            </div>
+        </section>
+    </main>
+    <script type="module" src="./js/event.js"></script>
+</body>
+
+</html>
