@@ -47,7 +47,7 @@ jobs:
           git pull origin main
 
           # Merge dev vào main
-          git merge dev -m "✅ Auto merge dev into main after successful build"
+          git merge dev --no-ff -m "✅ Auto merge dev into main after successful build"
 
           # Push lên main
           git push origin main
