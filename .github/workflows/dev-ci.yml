@@ -38,9 +38,11 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          git fetch origin
-          git checkout main || git checkout -b main origin/main
+          git fetch origin main || git checkout -b main
+          git checkout main
           git pull origin main || echo "No remote main yet"
 
-          git merge origin/dev --no-ff -m "Auto merge dev into main after successful test & build"
+          git merge origin/dev --no-ff --allow-unrelated-histories -m "Auto merge dev into main after successful build"
+
+          # Push bằng PAT
           git push https://$MY_PAT@github.com/thuangf45/CPSSFA.git main
