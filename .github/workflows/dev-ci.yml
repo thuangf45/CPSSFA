@@ -55,6 +55,7 @@ jobs:
       # --- Bước mới để kích hoạt workflow `main` ---
       - name: Trigger Main Build Workflow
         if: success()
+        shell: bash  # <--- Thêm dòng này vào
         run: |
           curl -X POST \
           -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
