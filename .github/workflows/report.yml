@@ -79,5 +79,5 @@ jobs:
                     -X POST \
                     -d "$payload" \
                     "$DISCORD_WEBHOOK"
-                env:
+            env:
                 DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
