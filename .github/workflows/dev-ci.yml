@@ -51,12 +51,3 @@ jobs:
 
           # Push lên main
           git push origin main
-
-      # --- Bước mới để kích hoạt workflow `main` ---
-      - name: Trigger Main Build Workflow
-        if: success()
-        run: |
-          Invoke-WebRequest -Uri https://api.github.com/repos/thuangf45/CPSSFA/actions/workflows/main-ci.yml/dispatches `
-          -Method POST `
-          -Headers @{ "Authorization" = "token ${{ secrets.PAT_TOKEN }}"; "Accept" = "application/vnd.github.v3+json" } `
-          -Body '{"ref":"main"}'
