@@ -68,6 +68,4 @@ jobs:
             -Method Post `
             -Headers $headers `
             -Body $body `
-            -ContentType "application/json"
-
-      
+            -ContentType "application/json"      
