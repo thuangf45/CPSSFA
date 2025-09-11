@@ -77,6 +77,15 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE Shop_ReadAll
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM [shop];
+END
+GO
 
 -- ======================
 -- UPDATE

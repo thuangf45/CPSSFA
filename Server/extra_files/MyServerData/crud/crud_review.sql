@@ -64,6 +64,16 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE Review_ReadAll
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM [review];
+END
+GO
+
 
 -- ======================
 -- UPDATE

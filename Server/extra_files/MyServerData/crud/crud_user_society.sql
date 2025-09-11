@@ -57,7 +57,17 @@ BEGIN
 
     SELECT *
     FROM [user_society] us
-    INNER JOIN @userSocieties u ON us.user_society_id = u.UserSocietyId;
+    JOIN @userSocieties u ON us.user_society_id = u.UserSocietyId;
+END
+GO
+
+CREATE OR ALTER PROCEDURE UserSociety_Read
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM [user_society];
 END
 GO
 
@@ -82,7 +92,7 @@ BEGIN
             us.user_guid         = COALESCE(u.UserGuid, us.user_guid),
             us.user_id           = COALESCE(u.UserId, us.user_id)
         FROM [user_society] us
-        INNER JOIN @userSocieties u ON us.user_society_id = u.UserSocietyId;
+        JOIN @userSocieties u ON us.user_society_id = u.UserSocietyId;
 
         COMMIT TRANSACTION;
         SELECT @@ROWCOUNT AS Result;
@@ -107,7 +117,7 @@ BEGIN
 
         DELETE us
         FROM [user_society] us
-        INNER JOIN @userSocieties u ON us.user_society_id = u.UserSocietyId;
+        JOIN @userSocieties u ON us.user_society_id = u.UserSocietyId;
 
         COMMIT TRANSACTION;
         SELECT @@ROWCOUNT AS Result;

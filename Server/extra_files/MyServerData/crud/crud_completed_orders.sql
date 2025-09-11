@@ -57,6 +57,16 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE CompletedOrders_ReadAll
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM [completed_orders];
+END
+GO
+
 
 -- ======================
 -- UPDATE

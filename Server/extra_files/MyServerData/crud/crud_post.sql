@@ -65,6 +65,16 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE Post_ReadAll
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM [post];
+END
+GO
+
 
 -- ======================
 -- UPDATE

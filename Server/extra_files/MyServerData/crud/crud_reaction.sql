@@ -61,6 +61,15 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE Reaction_ReadAll
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM [reaction];
+END
+GO
 
 -- ======================
 -- UPDATE

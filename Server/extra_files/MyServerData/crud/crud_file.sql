@@ -57,6 +57,15 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE File_ReadAll
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM [file];
+END
+GO
 
 -- ======================
 -- UPDATE

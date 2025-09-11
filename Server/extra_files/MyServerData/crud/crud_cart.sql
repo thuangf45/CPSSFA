@@ -57,6 +57,19 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE Cart_ReadAll
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM [cart];
+    -- ORDER BY cart_id DESC
+    -- OFFSET (@PageNumber - 1) * @PageSize ROWS
+    -- FETCH NEXT @PageSize ROWS ONLY;
+END
+GO
+
 
 -- ======================
 -- UPDATE

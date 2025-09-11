@@ -71,6 +71,15 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE Film_ReadAll
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM [film];
+END
+GO
 
 -- ======================
 -- UPDATE
