@@ -31,24 +31,21 @@ jobs:
         if: success()
         run: dotnet publish ./Server/Server.csproj -c Release -o ./BuildOutput --self-contained false -r win-x64
 
-      - name: Create Pull Request from dev to main
+      - name: Create Pull Request from dev to main via REST API
         if: success()
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}  # <- Dùng GH_TOKEN thay cho MY_PAT
+          MY_PAT: ${{ secrets.PAT_TOKEN }}
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
+          $headers = @{
+              Authorization = "token $env:MY_PAT"
+              Accept = "application/vnd.github.v3+json"
+          }
 
-          # Checkout dev branch
-          git checkout dev
+          $body = @{
+              title = "🚀 PR: dev → main after successful build"
+              head  = "dev"
+              base  = "main"
+              body  = "This PR was created automatically after a successful build on dev."
+          } | ConvertTo-Json
 
-
-          # Không cần login thủ công, GH_TOKEN sẽ được gh CLI dùng tự động
-          gh pr create `
-            --base main `
-            --head dev `
-            --title "🚀 PR: dev → main after successful build" `
-            --body "This PR was created automatically after a successful build on dev." `
-            --reviewer "thuangf45" `
-            --assignee "thuangf45" `
-            --label "auto-pr"
+          Invoke-RestMethod -Uri "https://api.github.com/repos/thuangf45/CPSSFA/pulls" -Method Post -Headers $headers -Body $body -ContentType "application/json"
