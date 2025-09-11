@@ -1,10 +1,10 @@
-name: Dev CI & Auto Merge
+name: Dev CI & Auto PR
 on:
   push:
     branches: [dev]
   pull_request:
     branches: [dev]
-# Test
+
 jobs:
   ci:
     name: 🚀 Build & Test
@@ -19,7 +19,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Đảm bảo có đủ lịch sử để merge chính xác
+          fetch-depth: 0
 
       - name: Run Unit Tests
         if: hashFiles('./Test/Test.csproj') != ''
@@ -31,7 +31,7 @@ jobs:
         if: success()
         run: dotnet publish ./Server/Server.csproj -c Release -o ./BuildOutput --self-contained false -r win-x64
 
-      - name: Auto merge dev into main
+      - name: Create Pull Request from dev to main
         if: success()
         env:
           MY_PAT: ${{ secrets.PAT_TOKEN }}
@@ -39,34 +39,21 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          # Lấy đầy đủ lịch sử và checkout main
-          git remote set-url origin https://$MY_PAT@github.com/thuangf45/CPSSFA.git
-          git fetch origin
-          git checkout main
-          git pull origin main
+          # Checkout dev branch
+          git checkout dev
 
-          # Merge dev vào main
-          git merge dev --no-ff -m "✅ Auto merge dev into main after successful build"
+          # Cài gh nếu chưa có
+          choco install gh -y || echo "gh already installed"
 
-          # Push lên main
-          git push origin main
+          # Login GH CLI bằng token
+          echo $env:MY_PAT | gh auth login --with-token
 
-      - name: Trigger Full CI Build via API
-        if: success()
-        env:
-          MY_PAT: ${{ secrets.PAT_TOKEN }}
-        run: |
-          $headers = @{
-            Authorization = "token $env:MY_PAT"
-            Accept = "application/vnd.github.v3+json"
-          }
-
-          $body = '{"ref":"main"}'
-
-          Invoke-RestMethod `
-            -Uri "https://api.github.com/repos/thuangf45/CPSSFA/actions/workflows/main-ci.yml/dispatches" `
-            -Method Post `
-            -Headers $headers `
-            -Body $body `
-            -ContentType "application/json"      
-            
+          # Tạo Pull Request
+          gh pr create \
+            --base main \
+            --head dev \
+            --title "🚀 PR: dev → main after successful build" \
+            --body "This PR was created automatically after a successful build on dev." \
+            --reviewer "thuangf45" \
+            --assignee "thuangf45" \
+            --label "auto-pr"
