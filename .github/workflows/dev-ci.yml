@@ -48,12 +48,12 @@ jobs:
           # Login GH CLI bằng token
           echo $env:MY_PAT | gh auth login --with-token
 
-          # Tạo Pull Request
-          gh pr create \
-            --base main \
-            --head dev \
-            --title "🚀 PR: dev → main after successful build" \
-            --body "This PR was created automatically after a successful build on dev." \
-            --reviewer "thuangf45" \
-            --assignee "thuangf45" \
+          # Tạo Pull Request (PowerShell style)
+          gh pr create `
+            --base main `
+            --head dev `
+            --title "🚀 PR: dev → main after successful build" `
+            --body "This PR was created automatically after a successful build on dev." `
+            --reviewer "thuangf45" `
+            --assignee "thuangf45" `
             --label "auto-pr"
