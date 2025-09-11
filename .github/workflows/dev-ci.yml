@@ -34,7 +34,7 @@ jobs:
       - name: Create Pull Request from dev to main
         if: success()
         env:
-          MY_PAT: ${{ secrets.PAT_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}  # <- Dùng GH_TOKEN thay cho MY_PAT
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
@@ -42,13 +42,8 @@ jobs:
           # Checkout dev branch
           git checkout dev
 
-          # Cài gh nếu chưa có
-          choco install gh -y || echo "gh already installed"
 
-          # Login GH CLI bằng token
-          echo $env:MY_PAT | gh auth login --with-token
-
-          # Tạo Pull Request (PowerShell style)
+          # Không cần login thủ công, GH_TOKEN sẽ được gh CLI dùng tự động
           gh pr create `
             --base main `
             --head dev `
