@@ -51,3 +51,12 @@ jobs:
 
           # Push lên main
           git push origin main
+
+      - name: Trigger Full CI Build on main
+        if: success()
+        uses: peter-evans/workflow-dispatch@v1
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          repository: thuangf45/CPSSFA
+          workflow: main-ci.yml
+          ref: main
