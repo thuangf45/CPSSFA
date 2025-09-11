@@ -1,5 +1,4 @@
 name: Dev CI & Auto Merge
-
 on:
   push:
     branches: [dev]
