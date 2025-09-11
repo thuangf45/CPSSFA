@@ -1,4 +1,6 @@
-﻿namespace Server.Source.Core
+﻿using LuciferCore.Core;
+
+namespace LuciferCore.Core
 {
     /// <summary>
     /// Lớp Simulation triển khai mẫu mô phỏng sự kiện rời rạc (discrete event simulator pattern).

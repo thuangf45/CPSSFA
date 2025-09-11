@@ -1,4 +1,4 @@
-﻿namespace Server.Source.Core
+﻿namespace LuciferCore.Core
 {
     public static partial class Simulation
     {

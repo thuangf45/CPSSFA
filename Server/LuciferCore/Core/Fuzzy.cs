@@ -1,4 +1,4 @@
-﻿namespace Server.Source.Core
+﻿namespace LuciferCore.Core
 {
     /// <summary>
     /// Fuzzy cung cấp các phương thức để sử dụng giá trị với độ lệch ngẫu nhiên (fuzz), 
