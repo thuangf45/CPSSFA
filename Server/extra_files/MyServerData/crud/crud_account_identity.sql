@@ -1,4 +1,4 @@
-﻿-- Switch to the database
+﻿ -- Switch to the database
 USE [$(DatabaseName)];
 GO
 
@@ -61,6 +61,16 @@ BEGIN
     SELECT *
     FROM [account_identity] ai
     JOIN @account_identities ais ON ais.IdentityId = ai.identity_id;
+END
+GO
+
+CREATE OR ALTER PROCEDURE AccountIdentity_ReadAll
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM [account_identity];
 END
 GO
 

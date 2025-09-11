@@ -73,6 +73,16 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE Voucher_ReadAll
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM [voucher];
+END
+GO
+
 
 -- ======================
 -- UPDATE

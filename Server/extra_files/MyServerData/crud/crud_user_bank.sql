@@ -52,9 +52,20 @@ BEGIN
     SET NOCOUNT ON;
     SELECT * 
     FROM [user_bank] ub
-    INNER JOIN @userBanks u ON ub.user_bank_id = u.UserBankId;
+    JOIN @userBanks u ON ub.user_bank_id = u.UserBankId;
 END
 GO
+
+CREATE OR ALTER PROCEDURE UserBank_ReadAll
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT * 
+    FROM [user_bank];
+END
+GO
+
 
 
 -- UPDATE toàn bộ (theo PK)
@@ -76,7 +87,7 @@ BEGIN
             ub.user_guid      = COALESCE(u.UserGuid, ub.user_guid),
             ub.user_id        = COALESCE(u.UserId, ub.user_id)
         FROM [user_bank] ub
-        INNER JOIN @userBanks u ON ub.user_bank_id = u.UserBankId;
+        JOIN @userBanks u ON ub.user_bank_id = u.UserBankId;
 
 
         COMMIT TRANSACTION;
@@ -102,7 +113,7 @@ BEGIN
 
         DELETE ub
         FROM [user_bank] ub
-        INNER JOIN @userBankIds u ON ub.user_bank_id = u.UserBankId;
+        JOIN @userBankIds u ON ub.user_bank_id = u.UserBankId;
 
         COMMIT TRANSACTION;
         SELECT @@ROWCOUNT AS Result;

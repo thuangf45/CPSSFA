@@ -65,6 +65,16 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE User_ReadAll
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM [user];
+END
+GO
+
 
 -- ======================
 -- UPDATE

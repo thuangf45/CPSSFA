@@ -52,6 +52,16 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE Account_ReadAll
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM [account] a;
+END
+GO
+
 -- ======================
 -- UPDATE
 -- ======================

@@ -83,6 +83,15 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE Order_ReadAll
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM [order];
+END
+GO
 
 -- ======================
 -- UPDATE

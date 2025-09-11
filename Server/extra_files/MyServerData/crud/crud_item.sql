@@ -69,6 +69,15 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE Item_ReadAll
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM [item];
+END
+GO
 
 -- ======================
 -- UPDATE
