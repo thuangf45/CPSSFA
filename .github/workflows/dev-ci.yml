@@ -34,10 +34,10 @@ jobs:
       - name: Create Pull Request from dev to main via REST API
         if: success()
         env:
-          MY_PAT: ${{ secrets.PAT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $headers = @{
-              Authorization = "token $env:MY_PAT"
+              Authorization = "token $env:GITHUB_TOKEN"
               Accept = "application/vnd.github.v3+json"
           }
 
@@ -48,4 +48,4 @@ jobs:
               body  = "This PR was created automatically after a successful build on dev."
           } | ConvertTo-Json
 
-          Invoke-RestMethod -Uri "https://api.github.com/repos/thuangf45/CPSSFA/pulls" -Method Post -Headers $headers -Body $body -ContentType "application/json"
+          Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/pulls" -Method Post -Headers $headers -Body $body -ContentType "application/json"
