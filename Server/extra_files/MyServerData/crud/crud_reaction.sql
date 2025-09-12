@@ -11,37 +11,28 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    BEGIN TRY
-        BEGIN TRANSACTION;
+    INSERT INTO [reaction] (
+        reaction_guid,
+        reaction_type,
+        created_at,
+        updated_at,
+        post_id,
+        post_guid,
+        user_society_id,
+        user_society_guid
+    )
+    SELECT
+        COALESCE(ReactionGuid, NEWID()),
+        ReactionType,
+        COALESCE(CreatedAt, GETDATE()),
+        COALESCE(UpdatedAt, GETDATE()),
+        PostId,
+        PostGuid,
+        UserSocietyId,
+        UserSocietyGuid
+    FROM @reactions;
 
-        INSERT INTO [reaction] (
-            reaction_guid,
-            reaction_type,
-            created_at,
-            updated_at,
-            post_id,
-            post_guid,
-            user_society_id,
-            user_society_guid
-        )
-        SELECT
-            COALESCE(ReactionGuid, NEWID()),
-            ReactionType,
-            COALESCE(CreatedAt, GETDATE()),
-            COALESCE(UpdatedAt, GETDATE()),
-            PostId,
-            PostGuid,
-            UserSocietyId,
-            UserSocietyGuid
-        FROM @reactions;
-
-        COMMIT TRANSACTION;
-        SELECT @@ROWCOUNT AS Result;
-    END TRY
-    BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        SELECT 0 AS Result;
-    END CATCH;
+    SELECT @@ROWCOUNT AS Result;
 END
 GO
 
@@ -80,29 +71,20 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    BEGIN TRY
-        BEGIN TRANSACTION;
+    UPDATE r
+    SET
+        r.reaction_guid     = COALESCE(rx.ReactionGuid, r.reaction_guid),
+        r.reaction_type     = COALESCE(rx.ReactionType, r.reaction_type),
+        r.created_at        = COALESCE(rx.CreatedAt, r.created_at),
+        r.updated_at        = COALESCE(rx.UpdatedAt, r.updated_at),
+        r.post_id           = COALESCE(rx.PostId, r.post_id),
+        r.post_guid         = COALESCE(rx.PostGuid, r.post_guid),
+        r.user_society_id   = COALESCE(rx.UserSocietyId, r.user_society_id),
+        r.user_society_guid = COALESCE(rx.UserSocietyGuid, r.user_society_guid)
+    FROM [reaction] r
+    JOIN @reactions rx ON r.reaction_id = rx.ReactionId;
 
-        UPDATE r
-        SET
-            r.reaction_guid     = COALESCE(rx.ReactionGuid, r.reaction_guid),
-            r.reaction_type     = COALESCE(rx.ReactionType, r.reaction_type),
-            r.created_at        = COALESCE(rx.CreatedAt, r.created_at),
-            r.updated_at        = COALESCE(rx.UpdatedAt, r.updated_at),
-            r.post_id           = COALESCE(rx.PostId, r.post_id),
-            r.post_guid         = COALESCE(rx.PostGuid, r.post_guid),
-            r.user_society_id   = COALESCE(rx.UserSocietyId, r.user_society_id),
-            r.user_society_guid = COALESCE(rx.UserSocietyGuid, r.user_society_guid)
-        FROM [reaction] r
-        JOIN @reactions rx ON r.reaction_id = rx.ReactionId;
-
-        COMMIT TRANSACTION;
-        SELECT @@ROWCOUNT AS Result;
-    END TRY
-    BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        SELECT 0 AS Result;
-    END CATCH;
+    SELECT @@ROWCOUNT AS Result;
 END
 GO
 
@@ -116,19 +98,10 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    BEGIN TRY
-        BEGIN TRANSACTION;
-
-        DELETE r
-        FROM [reaction] r
-        JOIN @reactions rx ON r.reaction_id = rx.ReactionId;
-
-        COMMIT TRANSACTION;
-        SELECT @@ROWCOUNT AS Result;
-    END TRY
-    BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        SELECT 0 AS Result;
-    END CATCH;
+    DELETE r
+    FROM [reaction] r
+    JOIN @reactions rx ON r.reaction_id = rx.ReactionId;
+    
+    SELECT @@ROWCOUNT AS Result;
 END
 GO

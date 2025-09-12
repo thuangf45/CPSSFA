@@ -13,33 +13,24 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    BEGIN TRY
-        BEGIN TRANSACTION;
+    INSERT INTO [user_bank] (
+        account_number,
+        account_amount,
+        currency,
+        updated_at,
+        user_guid,
+        user_id
+    )
+    SELECT 
+        AccountNumber,
+        ISNULL(AccountAmount, 0),
+        ISNULL(Currency, 'USD'),
+        ISNULL(UpdatedAt, GETDATE()),
+        UserGuid,
+        UserId
+    FROM @userBanks;
 
-        INSERT INTO [user_bank] (
-            account_number,
-            account_amount,
-            currency,
-            updated_at,
-            user_guid,
-            user_id
-        )
-        SELECT 
-            AccountNumber,
-            ISNULL(AccountAmount, 0),
-            ISNULL(Currency, 'USD'),
-            ISNULL(UpdatedAt, GETDATE()),
-            UserGuid,
-            UserId
-        FROM @userBanks;
-
-        COMMIT TRANSACTION;
-        SELECT @@ROWCOUNT AS Result;
-    END TRY
-    BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        SELECT -1 AS Result;
-    END CATCH
+    SELECT @@ROWCOUNT AS Result;
 END
 GO
 
@@ -75,28 +66,18 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    BEGIN TRY
-        BEGIN TRANSACTION;
+    UPDATE ub
+    SET 
+        ub.account_number = COALESCE(u.AccountNumber, ub.account_number),
+        ub.account_amount = COALESCE(u.AccountAmount, ub.account_amount),
+        ub.currency       = COALESCE(u.Currency, ub.currency),
+        ub.updated_at     = COALESCE(u.UpdatedAt, GETDATE()),
+        ub.user_guid      = COALESCE(u.UserGuid, ub.user_guid),
+        ub.user_id        = COALESCE(u.UserId, ub.user_id)
+    FROM [user_bank] ub
+    JOIN @userBanks u ON ub.user_bank_id = u.UserBankId;
 
-        UPDATE ub
-        SET 
-            ub.account_number = COALESCE(u.AccountNumber, ub.account_number),
-            ub.account_amount = COALESCE(u.AccountAmount, ub.account_amount),
-            ub.currency       = COALESCE(u.Currency, ub.currency),
-            ub.updated_at     = COALESCE(u.UpdatedAt, GETDATE()),
-            ub.user_guid      = COALESCE(u.UserGuid, ub.user_guid),
-            ub.user_id        = COALESCE(u.UserId, ub.user_id)
-        FROM [user_bank] ub
-        JOIN @userBanks u ON ub.user_bank_id = u.UserBankId;
-
-
-        COMMIT TRANSACTION;
-        SELECT @@ROWCOUNT AS Result;
-    END TRY
-    BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        SELECT -1 AS Result;
-    END CATCH
+    SELECT @@ROWCOUNT AS Result;
 END
 GO
 
@@ -108,19 +89,10 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    BEGIN TRY
-        BEGIN TRANSACTION;
+    DELETE ub
+    FROM [user_bank] ub
+    JOIN @userBankIds u ON ub.user_bank_id = u.UserBankId;
 
-        DELETE ub
-        FROM [user_bank] ub
-        JOIN @userBankIds u ON ub.user_bank_id = u.UserBankId;
-
-        COMMIT TRANSACTION;
-        SELECT @@ROWCOUNT AS Result;
-    END TRY
-    BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        SELECT -1 AS Result;
-    END CATCH
+    SELECT @@ROWCOUNT AS Result;
 END
 GO

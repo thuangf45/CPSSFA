@@ -11,40 +11,30 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    BEGIN TRY
-        BEGIN TRANSACTION;
+    INSERT INTO [account_identity] (
+        identity_guid, 
+        provider, 
+        provider_key, 
+        password_hash, 
+        created_at, 
+        last_used, 
+        is_verified, 
+        account_id,
+        account_guid
+    )
+    SELECT 
+        IdentityGuid, 
+        Provider, 
+        ProviderKey,
+        PasswordHash, 
+        CreatedAt, 
+        LastUsed, 
+        IsVerified, 
+        AccountId, 
+        AccountGuid
+    FROM @account_identites;
 
-        INSERT INTO [account_identity] (
-            identity_guid, 
-            provider, 
-            provider_key, 
-            password_hash, 
-            created_at, 
-            last_used, 
-            is_verified, 
-            account_id,
-            account_guid
-        )
-        SELECT 
-            IdentityGuid, 
-            Provider, 
-            ProviderKey,
-            PasswordHash, 
-            CreatedAt, 
-            LastUsed, 
-            IsVerified, 
-            AccountId, 
-            AccountGuid
-        FROM @account_identites;
-
-        COMMIT TRANSACTION;
-
-        SELECT @@ROWCOUNT AS Result;
-    END TRY
-    BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        SELECT 0 AS Result; -- lỗi
-    END CATCH;
+    SELECT @@ROWCOUNT AS Result;
 END
 GO
 
@@ -84,31 +74,21 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    BEGIN TRY
-        BEGIN TRANSACTION;
+    UPDATE ai
+    SET 
+        ai.identity_guid = COALESCE(ais.IdentityGuid, ai.identity_guid),
+        ai.provider      = COALESCE(ais.Provider, ai.provider),
+        ai.provider_key  = COALESCE(ais.ProviderKey, ai.provider_key), 
+        ai.password_hash = COALESCE(ais.PasswordHash, ai.password_hash), 
+        ai.created_at    = COALESCE(ais.CreatedAt, ai.created_at), 
+        ai.last_used     = COALESCE(ais.LastUsed, ai.last_used), 
+        ai.is_verified   = COALESCE(ais.IsVerified, ai.is_verified), 
+        ai.account_id    = COALESCE(ais.AccountId, ai.account_id), 
+        ai.account_guid  = COALESCE(ais.AccountGuid, ai.account_guid)
+    FROM [account_identity] ai
+    JOIN @account_identities ais ON ai.identity_id = ais.IdentityId;
 
-        UPDATE ai
-        SET 
-            ai.identity_guid = COALESCE(ais.IdentityGuid, ai.identity_guid),
-            ai.provider      = COALESCE(ais.Provider, ai.provider),
-            ai.provider_key  = COALESCE(ais.ProviderKey, ai.provider_key), 
-            ai.password_hash = COALESCE(ais.PasswordHash, ai.password_hash), 
-            ai.created_at    = COALESCE(ais.CreatedAt, ai.created_at), 
-            ai.last_used     = COALESCE(ais.LastUsed, ai.last_used), 
-            ai.is_verified   = COALESCE(ais.IsVerified, ai.is_verified), 
-            ai.account_id    = COALESCE(ais.AccountId, ai.account_id), 
-            ai.account_guid  = COALESCE(ais.AccountGuid, ai.account_guid)
-        FROM [account_identity] ai
-        JOIN @account_identities ais ON ai.identity_id = ais.IdentityId;
-
-
-        COMMIT TRANSACTION;
-        SELECT @@ROWCOUNT AS Result;
-    END TRY
-    BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        SELECT 0 AS Result;
-    END CATCH;
+    SELECT @@ROWCOUNT AS Result;
 END
 GO
 
@@ -122,19 +102,10 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    BEGIN TRY
-        BEGIN TRANSACTION;
+    DELETE ai
+    FROM [account_identity] ai
+    JOIN @account_identities ais ON ai.identity_id = ais.IdentityId;
 
-        DELETE ai
-        FROM [account_identity] ai
-        JOIN @account_identities ais ON ai.identity_id = ais.IdentityId;
-
-        COMMIT TRANSACTION;
-        SELECT @@ROWCOUNT AS Result;
-    END TRY
-    BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        SELECT 0 AS Result;
-    END CATCH;
+    SELECT @@ROWCOUNT AS Result;
 END
 GO
