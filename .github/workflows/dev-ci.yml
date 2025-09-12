@@ -31,7 +31,7 @@ jobs:
         if: success()
         run: dotnet publish ./Server/Server.csproj -c Release -o ./BuildOutput --self-contained false -r win-x64
 
-      - name: Create Pull Request from dev to main via REST API
+      - name: Create or Update Pull Request (dev → main)
         if: success()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -39,13 +39,31 @@ jobs:
           $headers = @{
               Authorization = "token $env:GITHUB_TOKEN"
               Accept = "application/vnd.github.v3+json"
+              "User-Agent" = "Dev-CI-AutoPR"
           }
 
-          $body = @{
-              title = "🚀 PR: dev → main after successful build"
-              head  = "dev"
-              base  = "main"
-              body  = "This PR was created automatically after a successful build on dev."
-          } | ConvertTo-Json
+          # Lấy danh sách PR đang mở từ dev -> main
+          $prs = Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:dev&base=main&state=open" -Headers $headers
 
-          Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/pulls" -Method Post -Headers $headers -Body $body -ContentType "application/json"
+          if ($null -ne $prs -and $prs.Count -gt 0) {
+              # Update PR cũ
+              $prNumber = $prs[0].number
+              $updateBody = @{
+                  title = "🚀 Auto PR: dev → main (updated)"
+                  body  = "Updated after latest build on dev."
+              } | ConvertTo-Json -Depth 10
+
+              Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/pulls/$prNumber" -Method Patch -Headers $headers -Body $updateBody -ContentType "application/json"
+          }
+          else {
+              # Tạo PR mới
+              $createBody = @{
+                  title = "🚀 PR: dev → main after successful build"
+                  head  = "dev"
+                  base  = "main"
+                  body  = "This PR was created automatically after a successful build on dev."
+              } | ConvertTo-Json -Depth 10
+
+              Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/pulls" -Method Post -Headers $headers -Body $createBody -ContentType "application/json"
+          }
+
